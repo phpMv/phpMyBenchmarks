@@ -4,4 +4,4 @@
 app/cache/
 vendor/
 server/tests/test-*
-
+app/hybridauth/config.php
