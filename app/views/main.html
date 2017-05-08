@@ -1,0 +1,21 @@
+<div class="ui container">
+	{{q["preparation-form"] |raw }}
+	<div class="ui attached message">
+	<div class="header">
+	    Test cases
+	  </div>
+	  <p>Fill out the form below to sign-up for a new account</p>
+	</div>
+	<div class="ui attached segment">
+		{{q["addTest"] | raw }}
+		{{forms |raw }}
+		<div id="forms">
+		</div>
+	</div>
+	{{q["valid"] | raw }}
+	<div id="results"></div>
+	<div id="graph"></div>
+	<div id="info"></div>
+</div>
+
+{{script_foot |raw }}

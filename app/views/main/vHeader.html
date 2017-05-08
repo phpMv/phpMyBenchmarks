@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base href="{{config["siteUrl"]}}">
+<meta charset="UTF-8">
+<title>benchmarks</title>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.9/semantic.min.css">
+<link rel="stylesheet" type="text/css" href="public/css/styles.css">
+</head>
+<body>
+	<div class="pagehead">
+		<div id="secondary-container" class="ui container">
+			<div id="secondary" class="ui menu secondary inverted">
+				<div class="item">
+				<img id="" src="public/img/logo3.png" alt="home">
+				</div>
+				<a class="item active" href="{{config["siteUrl"]}}">phpMyBenchmarks</a>
+				<div id="divInfoUser" class="ui menu right inverted">
+				{{ infoUser | raw }}</div>
+			</div>
+		</div>
+	</div>
+<div class="ui container">

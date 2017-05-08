@@ -1,0 +1,29 @@
+@CHARSET "UTF-8";
+.editor { 
+	min-height: 100px;
+	width: 100%;
+}
+.ui.segment.editor{
+	background-color: #002B36;
+}
+.ui.label.fluid.basic.left.pointing{
+	min-width: 180px;
+}
+.responseDiv{
+	margin-top: 22px!important;
+	height: calc(100% - 22px);
+}
+.responseResult{
+	margin-top: 5px;
+}
+.pagehead {
+	background-color: #1B1C1D;
+	border-bottom: 1px solid #eee;
+	margin: 0 0 1rem 0;
+	position: relative;
+}
+
+#jumbotron{
+	background-color: #F6F4F4;
+	padding: 36px;
+}
