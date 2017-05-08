@@ -10,6 +10,7 @@ use models\Benchmark;
 use libraries\Models;
 use Ajax\semantic\html\elements\HtmlLabel;
 use libraries\UserAuth;
+use Ajax\semantic\html\elements\HtmlButtonGroups;
 
  /**
  * Controller Main
@@ -22,11 +23,9 @@ class Main extends ControllerBase{
 	public function index(){
 		$header=$this->semantic->htmlHeader("header");
 		$header->asImage("public/img/benchmarks.png", "phpMyBenchmarks.net","Benchmark and improve your php code to get better performances");
-		$buttons=$this->semantic->htmlButtonGroups("buttons",["Create benchmark","Sign in","Sign up"]);
-		$buttons->getElement(0)->setColor("green")->addIcon("plus");
-		$buttons->getElement(1)->addIcon("sign in");
-		$buttons->getElement(2)->addIcon("user add");
-		$buttons->setPropertyValues("data-ajax", ["Main/benchmark","Auth/signin","Auth/signup"]);
+		$buttons=$this->semantic->htmlButtonGroups("buttons",["Create benchmark"]);
+		$buttons->getElement(0)->setColor("green")->setProperty("data-ajax", "Main/benchmark")->addIcon("plus");
+		$this->getButtons($buttons);
 		$buttons->getOnClick("","#main-container",["attr"=>"data-ajax"]);
 		$myBenchs="";
 		if(UserAuth::isAuth()){
@@ -34,6 +33,19 @@ class Main extends ControllerBase{
 		}
 		$this->jquery->compile($this->view);
 		$this->loadView("main/index.html",["myBenchs"=>$myBenchs]);
+	}
+
+	private function getButtons(HtmlButtonGroups $buttons){
+		if(UserAuth::isAuth()){
+			$element=$buttons->addElement("My benchmarks");
+			$element->setProperty("data-ajax", "Benchmarks/my");
+		}else{
+			$element=$buttons->addElement("Sign in");
+			$element->setProperty("data-ajax", "Auth/signin")->addIcon("sign in");
+
+			$element=$buttons->addElement("Sign up");
+			$element->setProperty("data-ajax", "Auth/signup")->addIcon("user add");
+		}
 	}
 
 	public function benchmark($id=null){
@@ -59,6 +71,7 @@ class Main extends ControllerBase{
 		$btAdd->getOnClick("main/addFormTestCase","#forms",["jqueryDone"=>"append"]);
 		$this->jquery->exec("setAceEditor('preparation');",true);
 		$this->jquery->exec("google.charts.load('current', {'packages':['corechart']});",true);
+		$this->jquery->exec("$('.ui.accordion').accordion({'exclusive': false});",true);
 		$this->jquery->compile($this->view);
 		$this->loadView("main.html",["forms"=>$forms]);
 	}

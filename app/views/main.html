@@ -1,20 +1,27 @@
 <div class="ui container">
-	{{q["preparation-form"] |raw }}
-	<div class="ui attached message">
-	<div class="header">
-	    Test cases
-	  </div>
-	  <p>Fill out the form below to sign-up for a new account</p>
-	</div>
-	<div class="ui attached segment">
-		{{q["addTest"] | raw }}
-		{{forms |raw }}
-		<div id="forms">
+	<div class="ui styled fluid accordion">
+		<div class="active title">
+			<i class="icon dropdown"></i>
+			Benchmark
+		</div>
+		<div class="active content">
+			{{q["preparation-form"] |raw }}
+		</div>
+		<div class="active title">
+			<i class="icon dropdown"></i>
+			Test cases
+		</div>
+		<div class="active content">
+			{{q["addTest"] | raw }}
+			{{forms |raw }}
+			<div id="forms">
+			</div>
 		</div>
 	</div>
-	{{q["valid"] | raw }}
+	<br>
 	<div id="results"></div>
 	<div id="graph"></div>
+	{{q["valid"] | raw }}
 	<div id="info"></div>
 </div>
 
