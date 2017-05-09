@@ -23,8 +23,10 @@ class Main extends ControllerBase{
 	public function index(){
 		$header=$this->semantic->htmlHeader("header");
 		$header->asImage("public/img/benchmarks.png", "phpMyBenchmarks.net","Benchmark and improve your php code to get better performances");
-		$buttons=$this->semantic->htmlButtonGroups("buttons",["Create benchmark"]);
+		$buttons=$this->semantic->htmlButtonGroups("buttons",["Create benchmark","All benchmarks"]);
 		$buttons->getElement(0)->setColor("green")->setProperty("data-ajax", "Main/benchmark")->addIcon("plus");
+		$buttons->getElement(1)->setProperty("data-ajax", "Benchmarks/all");
+
 		$this->getButtons($buttons);
 		$buttons->getOnClick("","#main-container",["attr"=>"data-ajax"]);
 		$myBenchs="";
@@ -60,13 +62,16 @@ class Main extends ControllerBase{
 		}
 		$_SESSION["benchmark"]=$benchmark;
 		$prepForm=$this->semantic->htmlForm("preparation-form");
+		$prepForm->addInput("bench-name","Name","text",$benchmark->getName());
+		$prepForm->addTextarea("bench-description", "Description",$benchmark->getDescription(),"Description",2);
 		$prepForm->addElement("preparation",$benchmark->getBeforeAll(),"Preparation","div","ui segment editor");
 		$forms="";
 		foreach ($benchmark->getTestcases() as $testcase){
 			$forms.=$this->addFormTestCase($testcase,true);
 		}
-		$bt=$this->semantic->htmlButton("valid","Run test cases","fluid");
-		$bt->onClick("var form=getNextForm('form.toSubmit');if(form!=false) form.form('submit');");
+		$bts=$this->semantic->htmlButtonGroups("btsTests",["Run test cases","Save"]);
+		$bts->addClass("fluid");
+		$bts->getElement(0)->onClick("var form=getNextForm('form.toSubmit');if(form!=false) form.form('submit');");
 		$btAdd=$this->semantic->htmlButton("addTest","Add test case");
 		$btAdd->getOnClick("main/addFormTestCase","#forms",["jqueryDone"=>"append"]);
 		$this->jquery->exec("setAceEditor('preparation');",true);
@@ -114,7 +119,7 @@ class Main extends ControllerBase{
 		$form->addClass("test toSubmit");
 		$form->setFields(["name","code"]);
 		$this->jquery->exec("setAceEditor('".$formId."-code-0');",true);
-		$form->setSubmitParams("Main/send/".$id,"#response-".$formId,["params"=>"{'preparation':ace.edit('preparation').getValue(),'code':ace.edit('".$formId."-code-0').getValue()}"]);
+		$form->setSubmitParams("Main/send/".$id,"#response-".$formId,["params"=>"{'bench-name':$('#bench-name').val(),'bench-description':$('#bench-description').val(),'preparation':ace.edit('preparation').getValue(),'code':ace.edit('".$formId."-code-0').getValue()}"]);
 		$form->fieldAsElement("code","div","ui segment editor");
 		$btDelete=$this->semantic->htmlButton("delete-".$formId,"Delete test case","fluid");
 		$btDelete->setProperty("data-ajax", $id);
@@ -129,6 +134,9 @@ class Main extends ControllerBase{
 		$name=$_POST["name"];
 		$benchmark=$_SESSION["benchmark"];
 		$benchmark->setBeforeAll($preparation);
+		$benchmark->setName($_POST["bench-name"]);
+		$benchmark->setDescription($_POST["bench-description"]);
+
 		$test=$benchmark->getTestByCallback(function($test) use ($id){return $test->form==$id;});
 		$test->setCode($command);
 		$test->setName($name);
@@ -147,7 +155,7 @@ class Main extends ControllerBase{
 		$responses=$serverExchange->send($action, $content, $params);
 		$this->displayMessages($responses,$id);
 		$this->jquery->exec("$('#".$form."').removeClass('toSubmit');var form=getNextForm('form.toSubmit');if(form!=false) form.form('submit'); else {\$('form.test').addClass('toSubmit');".
-				$this->jquery->getDeferred("Main/testsTerminate","#results")."}",true);
+			$this->jquery->getDeferred("Main/testsTerminate","#results")."}",true);
 		echo $this->jquery->compile();
 	}
 

@@ -138,4 +138,12 @@ class Benchmark{
 		}
 		return $max+1;
 	}
+
+	public function __toString(){
+		$result=$this->getName();
+		if(\count($this->testcases)>0){
+			$result.=" (".\count($this->testcases)." test(s))";
+		}
+		return $result;
+	}
 }

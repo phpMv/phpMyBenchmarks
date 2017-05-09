@@ -81,8 +81,9 @@ class Models {
 
 	private static function getLastResultUid(Testcase $test){
 		$result=DAO::getOne("models\Result", "idTestcase=".$test->getId()." order by CreatedAt DESC");
-		if(isset($result))
+		if(isset($result)){
 			return $result->getUid();
+		}
 		return null;
 	}
 

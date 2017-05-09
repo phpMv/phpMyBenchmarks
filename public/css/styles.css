@@ -27,3 +27,10 @@
 	background-color: #F6F4F4;
 	padding: 36px;
 }
+.ajax-loader{
+	position:relative;
+	display: block;
+	margin: 0 auto;
+	height: 66px;
+	width: 66px;
+}
