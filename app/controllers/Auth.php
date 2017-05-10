@@ -20,29 +20,46 @@ class Auth extends ControllerBase{
 	}
 
 	public function signup(){
-		$bt=HtmlButton::social("bt-github", Social::GITHUB);
-		$bt->asLink(RequestUtils::getUrl("Auth/signin_with_hybridauth/GitHub"));
-		$bt->compile($this->jquery,$this->view);
-
-		$bt2=HtmlButton::social("bt-google", Social::GOOGLEPLUS);
-		$bt2->asLink(RequestUtils::getUrl("Auth/signin_with_hybridauth/Google"));
-		$bt2->compile($this->jquery,$this->view);
-
-		$frm=$this->semantic->defaultAccount("frm-account",new User());
-		$frm->setSubmitParams("Auth/signCheck/true","#ajax");
-		$this->jquery->postOn("change", "#frm-account-login-0", "Auth/signCheck","{'login':$(this).val()}","#ajax");
-
-		$this->jquery->compile($this->view);
-		$this->loadView("Auth/sign.html",["title1"=>"Sign up with","title2"=>"Create an account"]);
+		$this->sign(function(){
+			$frm=$this->semantic->defaultAccount("frm-account",new User());
+			$frm->setSubmitParams("Auth/signCheck/true","#ajax");
+			$this->jquery->postOn("change", "#frm-account-login-0", "Auth/signCheck","{'login':$(this).val()}","#ajax");
+		}, ["title1"=>"Sign up with","title2"=>"Create an account"]);
 	}
 
 	public function signin(){
-		$this->sign(function(){$this->semantic->defaultLogin("frm-account",new User());}, ["title1"=>"Sign in with","title2"=>"Log in with your account"]);
+		$this->sign(function(){
+			$frm=$this->semantic->defaultLogin("frm-account",new User());
+			$frm->setSubmitParams("Auth/connect","#main-container");
+		}, ["title1"=>"Sign in with","title2"=>"Log in with your account"]);
+	}
+
+	public function connect(){
+		if(isset($_POST["login"])){
+			$users=DAO::getAll("models\User","login='".$_POST["login"]."' OR email='".$_POST["login"]."'");
+			foreach ($users as $user){
+				if($user->getPassword()==@$_POST["password"]){
+					$user->avatar="public/img/male.png";
+					$_SESSION["user"]=$user;
+					$header=$this->jquery->semantic()->htmlHeader("headerUser",3);
+					$header->asImage($user->avatar, $user->getLogin(),"connected");
+					echo GUI::showSimpleMessage($this->jquery, $header, "info","");
+					$this->forward("controllers\Main","index",[],true,true);
+					$this->jquery->get("Auth/infoUser","#divInfoUser","{}",null,false);
+					break;
+				}
+			}
+		}
+		if(!isset($_SESSION["user"])){
+			echo GUI::showSimpleMessage($this->jquery, "Failed to connect : bad login or password.", "error","error");
+			$this->forward("controllers\Auth","signin",[],true,true);
+		}
+		echo $this->jquery->compile($this->view);
 	}
 
 	public function signCheck($beforeSubmit=false){
 		if(isset($_POST["login"])){
-			$nb=DAO::count("models\User","login='".$_POST["login"]."'");
+			$nb=DAO::count("models\User","login='".$_POST["login"]."' AND idAuthProvider is null");
 			if($nb>0){
 				$this->jquery->exec("$('#frm-account').form('add errors', {login: 'This login is already in use.'});$('#frm-account').form('add prompt', 'login')",true);
 			}else{
@@ -98,6 +115,10 @@ class Auth extends ControllerBase{
 		$bt2->asLink(RequestUtils::getUrl("Auth/signin_with_hybridauth/Google"));
 		$bt2->compile($this->jquery,$this->view);
 
+		$bt3=HtmlButton::social("bt-linkedin", Social::LINKEDIN);
+		$bt3->asLink(RequestUtils::getUrl("Auth/signin_with_hybridauth/Linkedin"));
+		$bt3->compile($this->jquery,$this->view);
+
 		$formCallback();
 
 		$this->jquery->compile($this->view);
@@ -134,7 +155,7 @@ class Auth extends ControllerBase{
 			if ($user===null) {
 				$user=new User();
 				$user->setLogin($user_profile->displayName);
-				$user->setMail($user_profile->email);
+				$user->setEmail($user_profile->email);
 				$user->setAuthProvider($dbProvider);
 				$user->setAuthkey($user_profile->identifier);
 				DAO::insert($user);
@@ -165,7 +186,7 @@ class Auth extends ControllerBase{
 		unset($_SESSION["user"]);
 
 		$header=$this->jquery->semantic()->htmlHeader("headerUser",3);
-		$header->asImage($user->avatar, $user->getLogin(),"Déconnecté");
+		$header->asImage($user->avatar, $user->getLogin(),"By!");
 		$message=$this->semantic->htmlMessage("message",$header);
 		$message->setDismissable()->setTimeout(5000);
 		echo $message->compile($this->jquery);

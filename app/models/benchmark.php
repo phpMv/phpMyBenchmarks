@@ -16,7 +16,13 @@ class Benchmark{
 
 	private $version;
 
-	private $stars;
+	private $phpVersion;
+
+	/**
+	 * @manyToMany("targetEntity"=>"models\User","inversedBy"=>"benchstars")
+	 * @joinTable("name"=>"benchstar")
+	 */
+	private $userstars;
 
 	/**
 	 * @oneToMany("mappedBy"=>"benchmark","className"=>"models\Testcase")
@@ -173,6 +179,16 @@ class Benchmark{
 		$this->users=$users;
 		return $this;
 	}
+
+	public function getPhpVersion() {
+		return $this->phpVersion;
+	}
+
+	public function setPhpVersion($phpVersion) {
+		$this->phpVersion=$phpVersion;
+		return $this;
+	}
+
 
 
 }

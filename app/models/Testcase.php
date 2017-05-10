@@ -12,6 +12,8 @@ class Testcase{
 
 	private $createdAt;
 
+	private $phpVersion;
+
 	/**
 	 * @manyToOne
 	 * @joinColumn("className"=>"models\Benchmark","name"=>"idBenchmark","nullable"=>false)
@@ -81,5 +83,15 @@ class Testcase{
 		$this->createdAt=$createdAt;
 		return $this;
 	}
+
+	public function getPhpVersion() {
+		return $this->phpVersion;
+	}
+
+	public function setPhpVersion($phpVersion) {
+		$this->phpVersion=$phpVersion;
+		return $this;
+	}
+
 
 }

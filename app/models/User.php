@@ -23,7 +23,7 @@ class User{
 	private $benchmarks;
 
 	/**
-	 * @manyToMany("targetEntity"=>"models\Benchmark","inversedBy"=>"users")
+	 * @manyToMany("targetEntity"=>"models\Benchmark","inversedBy"=>"userstars")
 	 * @joinTable("name"=>"benchstar")
 	 */
 	private $benchstars;
