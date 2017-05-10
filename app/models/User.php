@@ -8,16 +8,25 @@ class User{
 
 	private $login;
 
-	private $mail;
+	private $email;
 
 	private $password;
 
+	/**
+	 * @column("name"=>"authkey","nullable"=>true)
+	 */
 	private $authkey;
 
 	/**
 	 * @oneToMany("mappedBy"=>"user","className"=>"models\Benchmark")
 	*/
 	private $benchmarks;
+
+	/**
+	 * @manyToMany("targetEntity"=>"models\Benchmark","inversedBy"=>"users")
+	 * @joinTable("name"=>"benchstar")
+	 */
+	private $benchstars;
 
 	/**
 	 * @manyToOne
@@ -41,12 +50,12 @@ class User{
 		$this->login=$login;
 	}
 
-	 public function getMail(){
-		return $this->mail;
+	 public function getEmail(){
+		return $this->email;
 	}
 
-	 public function setMail($mail){
-		$this->mail=$mail;
+	 public function setEmail($mail){
+		$this->email=$mail;
 	}
 
 	 public function getPassword(){
@@ -81,6 +90,16 @@ class User{
 		$this->authProvider=$authProvider;
 		return $this;
 	}
+
+	public function getBenchstars() {
+		return $this->benchstars;
+	}
+
+	public function setBenchstars($benchstars) {
+		$this->benchstars=$benchstars;
+		return $this;
+	}
+
 
 
 }

@@ -103,8 +103,12 @@ class Benchmarks extends ControllerBase{
 			echo $this->jquery->compile($this->view);
 	}
 
-	public function seeOne($id){
-		echo $id;
+	public function seeOne($idBenchmark){
+		echo $idBenchmark;
+	}
+
+	public function star($idBenchmark){
+
 	}
 
 	private function showSimpleMessage($content,$type,$icon="info",$timeout=NULL){
@@ -114,7 +118,7 @@ class Benchmarks extends ControllerBase{
 		$message->setDismissable();
 		if(isset($timeout))
 			$message->setTimeout(3000);
-			return $message;
+		return $message;
 	}
 
 	private function showConfMessage($content,$type,$url,$responseElement,$data,$attributes=NULL){
@@ -129,4 +133,5 @@ class Benchmarks extends ControllerBase{
 		$messageDlg->addContent([$btOkay,$btCancel]);
 		return $messageDlg;
 	}
+
 }

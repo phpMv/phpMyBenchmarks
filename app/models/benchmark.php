@@ -16,6 +16,8 @@ class Benchmark{
 
 	private $version;
 
+	private $stars;
+
 	/**
 	 * @oneToMany("mappedBy"=>"benchmark","className"=>"models\Testcase")
 	*/
@@ -26,6 +28,13 @@ class Benchmark{
 	 * @joinColumn("className"=>"models\User","name"=>"idUser","nullable"=>false)
 	*/
 	private $user;
+
+
+	/**
+	 * @manyToMany("targetEntity"=>"models\User","inversedBy"=>"benchstars")
+	 * @joinTable("name"=>"benchstar")
+	 */
+	private $users;
 
 	public function __construct(){
 		$this->testcases=[];
@@ -146,4 +155,24 @@ class Benchmark{
 		}
 		return $result;
 	}
+
+	public function getStars() {
+		return $this->stars;
+	}
+
+	public function setStars($stars) {
+		$this->stars=$stars;
+		return $this;
+	}
+
+	public function getUsers() {
+		return $this->users;
+	}
+
+	public function setUsers($users) {
+		$this->users=$users;
+		return $this;
+	}
+
+
 }

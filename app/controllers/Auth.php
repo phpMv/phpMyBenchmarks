@@ -3,11 +3,11 @@ namespace controllers;
  use micro\orm\DAO;
 use models\User;
 use micro\controllers\Startup;
-use Ajax\semantic\html\base\constants\Size;
 use micro\utils\RequestUtils;
 use libraries\UserAuth;
 use Ajax\semantic\html\elements\HtmlButton;
 use Ajax\semantic\html\base\constants\Social;
+use libraries\GUI;
 
  /**
  * Controller Auth
@@ -28,7 +28,9 @@ class Auth extends ControllerBase{
 		$bt2->asLink(RequestUtils::getUrl("Auth/signin_with_hybridauth/Google"));
 		$bt2->compile($this->jquery,$this->view);
 
-		$this->semantic->defaultAccount("frm-account",new User());
+		$frm=$this->semantic->defaultAccount("frm-account",new User());
+		$frm->setSubmitParams("Auth/signCheck/true","#ajax");
+		$this->jquery->postOn("change", "#frm-account-login-0", "Auth/signCheck","{'login':$(this).val()}","#ajax");
 
 		$this->jquery->compile($this->view);
 		$this->loadView("Auth/sign.html",["title1"=>"Sign up with","title2"=>"Create an account"]);
@@ -36,6 +38,55 @@ class Auth extends ControllerBase{
 
 	public function signin(){
 		$this->sign(function(){$this->semantic->defaultLogin("frm-account",new User());}, ["title1"=>"Sign in with","title2"=>"Log in with your account"]);
+	}
+
+	public function signCheck($beforeSubmit=false){
+		if(isset($_POST["login"])){
+			$nb=DAO::count("models\User","login='".$_POST["login"]."'");
+			if($nb>0){
+				$this->jquery->exec("$('#frm-account').form('add errors', {login: 'This login is already in use.'});$('#frm-account').form('add prompt', 'login')",true);
+			}else{
+				$this->jquery->exec("$('#frm-account .ui.error.message ul:contains(\"This login is already in use.\")').remove();",true);
+				if($beforeSubmit=="true"){
+					$this->jquery->post("Auth/createAccount","#main-container",\json_encode($_POST),["ajaxTransition"=>"random"]);
+				}
+			}
+			echo $this->jquery->compile();
+		}
+	}
+
+	public function createAccount(){
+		$user=new User();
+		RequestUtils::setValuesToObject($user,$_POST);
+		$key=md5(\microtime(true));
+		$user->setAuthkey($key);
+		try{
+		if(DAO::insert($user)){
+			echo GUI::showSimpleMessage($this->jquery, "An email was sent to <b>".$user->getEmail()."</b>, containing a link to activate your account.", "info");
+		}else{
+			echo GUI::showSimpleMessage($this->jquery, "The account was not created due to an error.<br>Try again later.", "error");
+		}
+		}catch(\Exception $e){
+			echo GUI::showSimpleMessage($this->jquery, "The account was not created due to an error.<br>Try again later.", "error");
+		}
+		echo $this->jquery->compile();
+	}
+
+	public function activateAccount($key){
+		$user=DAO::getOne("models\User", "authkey='".$key."'");
+		if($user!==null){
+			$user->setAuthkey(null);
+			DAO::update($user);
+			$bt=new HtmlButton("bt-signin","Sign in");
+			$bt->addIcon("sign in");
+			$bt->getOnClick("Auth/signin","#main-container",["ajaxTransition"=>"random"]);
+			echo GUI::showSimpleMessage($this->jquery, ["Your account has been activated. You can now log in as <b>`".$user->getLogin()."`</b>:<br>",$bt], "","announcement");
+		}else{
+			echo GUI::showSimpleMessage($this->jquery, "Unable to activate account.<br>Check the given url and try again.", "warning","warning");
+		}
+		$this->forward("controllers\Main","index",[],true,true);
+
+		echo $this->jquery->compile($this->view);
 	}
 
 	private function sign($formCallback,$titles){

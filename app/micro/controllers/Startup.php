@@ -72,7 +72,7 @@ class Startup {
 		}
 	}
 
-	public static function runAction($u, $initialize=true, $finalize=true) {
+	public static function runAction($u, $initialize=true, $finalize=true,$forwarded=false) {
 		$config=self::getConfig();
 		$ctrl=$u[0];
 		$controller=new $ctrl();
@@ -80,6 +80,7 @@ class Startup {
 			print "`{$u[0]}` n'est pas une instance de contrôleur.`<br/>";
 			return;
 		}
+		$controller->forwarded=$forwarded;
 		// Dependency injection
 		if (\array_key_exists("di", $config)) {
 			$di=$config["di"];

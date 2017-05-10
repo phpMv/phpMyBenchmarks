@@ -23,6 +23,11 @@ abstract class Controller {
 	protected $view;
 
 	/**
+	 * @var boolean
+	 */
+	public $forwarded;
+
+	/**
 	 * Default action
 	 */
 	abstract public function index();
@@ -102,7 +107,7 @@ abstract class Controller {
 		} else {
 			$u=\array_merge($u, [ $params ]);
 		}
-		Startup::runAction($u, $initialize, $finalize);
+		Startup::runAction($u, $initialize, $finalize,true);
 		if($asString)
 			return \ob_get_clean();
 	}

@@ -15,15 +15,16 @@ abstract class ControllerBase extends Controller{
 	 * @var Semantic
 	 */
 	protected $semantic;
+
 	public function initialize(){
 		$this->semantic=$this->jquery->semantic();
-		if(!RequestUtils::isAjax()){
+		if(!RequestUtils::isAjax() && !$this->forwarded){
 			$this->loadView("main/vHeader.html",["infoUser"=>UserAuth::getInfoUser($this->jquery,true)]);
 		}
 	}
 
 	public function finalize(){
-		if(!RequestUtils::isAjax()){
+		if(!RequestUtils::isAjax() && !$this->forwarded){
 			$this->loadView("main/vFooter.html");
 		}
 	}
