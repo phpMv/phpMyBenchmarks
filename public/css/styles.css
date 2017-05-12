@@ -1,6 +1,6 @@
 @CHARSET "UTF-8";
 .editor { 
-	min-height: 100px;
+	/*min-height: 100px;*/
 	width: 100%;
 }
 .ui.segment.editor{

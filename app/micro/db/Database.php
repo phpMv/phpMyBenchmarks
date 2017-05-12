@@ -96,6 +96,17 @@ class Database {
 		return $this->pdoObject->exec($sql);
 	}
 
+	/**
+	 * Retourne le nombre d'enregistrements de $tableName respectant la condition éventuellement passée en paramètre
+	 * @param string $tableName
+	 * @param string $condition Partie suivant le WHERE d'une instruction SQL
+	 */
+	public function count($tableName, $condition='') {
+		if ($condition != '')
+			$condition=" WHERE " . $condition;
+			return $this->query("SELECT COUNT(*) FROM " . $tableName . $condition)->fetchColumn();
+	}
+
 	public function getServerName() {
 		return $this->serverName;
 	}

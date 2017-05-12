@@ -186,7 +186,7 @@ class Auth extends ControllerBase{
 		unset($_SESSION["user"]);
 
 		$header=$this->jquery->semantic()->htmlHeader("headerUser",3);
-		$header->asImage($user->avatar, $user->getLogin(),"By!");
+		$header->asImage($user->avatar, $user->getLogin(),"Bye!");
 		$message=$this->semantic->htmlMessage("message",$header);
 		$message->setDismissable()->setTimeout(5000);
 		echo $message->compile($this->jquery);

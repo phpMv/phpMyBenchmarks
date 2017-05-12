@@ -6,6 +6,7 @@ use models\Benchmark;
 use models\Testcase;
 use models\Result;
 use micro\orm\DAO;
+use models\Execution;
 
 class Models {
 	const TIME_UNITS=[" "=>1,"m"=>0.001,"µ"=>0.000001,"n"=>0.000000001];
@@ -33,30 +34,27 @@ class Models {
 	 * @param Testcase $testcase
 	 * @param double $calc
 	 * @param string $status
-	 * @param string $uid
 	 * @return Result
 	 */
-	public static function addResult(Testcase $testcase,$calc,$status,$uid){
+	public static function addResult(Execution $execution,Testcase $testcase,$calc,$status){
 		$result=new Result();
 		$result->setTimer($calc);
 		$result->setStatus($status);
-		$result->setUid($uid);
-		$testcase->addResult($result);
+		$result->setTestcase($testcase);
+		$execution->addResult($result);
 		return $result;
 	}
 
 	public static function getResults(Benchmark $benchmark,$uid,$percent=true){
 		$array=[];$return=[];
-		$tests=$benchmark->getTestcases();
-		foreach ($tests as $test){
-			$results=$test->getResults();
+		$executions=$benchmark->getExecutions($uid);
+		foreach ($executions as $execution){
+			$results=$execution->getResults();
 			foreach ($results as $result){
 				$time=$result->getTimer();
-				if($result->getUid()==$uid){
-					$array[$test->getName()]=$time;
-					if($time!=0 && (!isset($min) || $time<$min))
-						$min=$time;
-				}
+				$array[$result->getTestcase()->getName()]=$time;
+				if($time!=0 && (!isset($min) || $time<$min))
+					$min=$time;
 			}
 		}
 			foreach ($array as $k=>$v){
@@ -69,22 +67,28 @@ class Models {
 	}
 
 	public static function getLastResults(Benchmark $benchmark,$percent=true){
-		$tests=$benchmark->getTestcases();
-		if(\count($tests)>0){
-			$uid=self::getLastResultUid($tests[0]);
-			if($uid!==NULL){
-				return DAO::getAll("models\Result","uid='".$uid."' ORDER BY status DESC,timer ASC");
-			}
+		$executions=$benchmark->getExecutions();
+		$execution=self::getLastExecution($executions);
+		if($execution!==NULL){
+			return DAO::getAll("models\Result","idExecution='".$execution->getId()."' ORDER BY status DESC,timer ASC");
 		}
 		return [];
 	}
 
-	private static function getLastResultUid(Testcase $test){
-		$result=DAO::getOne("models\Result", "idTestcase=".$test->getId()." order by CreatedAt DESC");
-		if(isset($result)){
-			return $result->getUid();
+	/**
+	 * @param array $executions
+	 * @return Execution
+	 */
+	private static function getLastExecution(array $executions){
+		$last=null;
+		$max=0;
+		foreach ($executions as $execution){
+			if($execution->getCreatedAt()>$max){
+				$max=$execution->getCreatedAt();
+				$last=$execution;
+			}
 		}
-		return null;
+		return $last;
 	}
 
 	public static function save($benchmark){
@@ -98,22 +102,31 @@ class Models {
 			$benchmark->setCreatedAt(\date("Y-m-d H:i:s"));
 		}
 		foreach ($benchmark->getTestcases() as $test){
-			if($test->getCreatedAt()!=NULL)
+			if($test->getCreatedAt()!=NULL){
 				DAO::update($test);
+			}else{
+				$test->setId(null);
+				DAO::insert($test);
+				$test->setCreatedAt(\date("Y-m-d H:i:s"));
+			}
+		}
+		foreach ($benchmark->getExecutions() as $execution){
+			if($execution->getCreatedAt()!=NULL)
+				DAO::update($execution);
+			else{
+				$execution->setId(NULL);
+				DAO::insert($execution);
+				$execution->setCreatedAt(\date("Y-m-d H:i:s"));
+			}
+			foreach ($execution->getResults() as $result){
+				if($result->getCreatedAt()!=NULL)
+					DAO::update($result);
 				else{
-					$test->setId(null);
-					DAO::insert($test);
-					$test->setCreatedAt(\date("Y-m-d H:i:s"));
+					$result->setId(null);
+					DAO::insert($result);
+					$result->setCreatedAt(\date("Y-m-d H:i:s"));
 				}
-				foreach ($test->getResults() as $result){
-					if($result->getCreatedAt()!=NULL)
-						DAO::update($result);
-						else{
-							$result->setId(null);
-							DAO::insert($result);
-							$result->setCreatedAt(\date("Y-m-d H:i:s"));
-						}
-				}
+			}
 		}
 	}
 

@@ -7,6 +7,9 @@ use Ajax\semantic\html\elements\HtmlList;
 use models\Result;
 use libraries\UserAuth;
 use Ajax\semantic\html\elements\HtmlButton;
+use micro\db\Database;
+use Ajax\semantic\html\content\view\HtmlItem;
+use Ajax\semantic\html\elements\HtmlSegment;
 
  /**
  * Controller Benchmarks
@@ -36,9 +39,18 @@ class Benchmarks extends ControllerBase{
 
 	private function displayBenchmarks($benchMarks,$title){
 		$deBenchs=$this->semantic->dataTable("deBenchs", "models\Benchmark", $benchMarks);
+		$deBenchs->setCompact(true);
 		$deBenchs->setIdentifierFunction("getId");
-		$deBenchs->setFields(['name','tests','results','createdAt']);
-		$deBenchs->setCaptions(['Name','Tests','Latest results','Created at','Actions']);
+		$deBenchs->setFields(['stars','name','tests','results','createdAt']);
+		$deBenchs->setCaptions(['Stars','Name','Tests','Latest results','Created at','Actions']);
+		$deBenchs->setValueFunction("stars", function($str,$bench){
+			$count=DAO::$db->count('benchstar',"idBenchmark=".$bench->getId());
+			$bt=new HtmlButton("bt-star-".$bench->getId());
+			$bt->addIcon("star");
+			$bt->addLabel($count);
+			$bt->getContent()[0]->addClass("icon");
+			return $bt;
+		});
 		$deBenchs->setValueFunction("tests", function($str,$bench){return new HtmlLabel("",\count($bench->getTestcases()));});
 		$deBenchs->setValueFunction("results",function($str,$bench){
 			$results=Models::getLastResults($bench,true);
@@ -71,7 +83,7 @@ class Benchmarks extends ControllerBase{
 			if(!isset($_SESSION["user"]) || $bench->getUser()->getId()!=$_SESSION["user"]->getId())
 				$delete->wrap("<!--","-->");
 		});
-		$deBenchs->insertInFieldButton(4, "",true,function($see){
+		$deBenchs->insertInFieldButton(5, "",true,function($see){
 			$see->addClass("see")->asIcon("unhide");
 		});
 		$deBenchs->setUrls(["edit"=>"Main/benchmark","delete"=>"Benchmarks/delete"]);
@@ -104,7 +116,23 @@ class Benchmarks extends ControllerBase{
 	}
 
 	public function seeOne($idBenchmark){
-		echo $idBenchmark;
+		$header1=$this->semantic->htmlHeader("header1",3,"Code");
+		$header1->addIcon("code");
+		$benchmark=DAO::getOne("models\Benchmark", $idBenchmark);
+		$tests=DAO::getOneToMany($benchmark, "testcases");
+		$this->jquery->exec("setAceEditor('preparation',true);",true);
+		$list=$this->semantic->htmlList("tests");
+		$list->fromDatabaseObjects($tests, function($test){
+			$item=new HtmlItem("");
+			$code=new HtmlSegment("code-".$test->getId(),\htmlentities($test->getCode()));
+			$code->addClass("editor");
+			$item->addItemContent([$test->getName(),$code]);
+			$this->jquery->exec("setAceEditor('code-".$test->getId()."',true);",true);
+			return $item;
+		});
+		$this->jquery->exec("$('.ui.accordion').accordion({'exclusive': false});",true);
+		$this->jquery->compile($this->view);
+		$this->loadView("benchmarks/seeOne.html",["benchmark"=>$benchmark]);
 	}
 
 	public function star($idBenchmark){

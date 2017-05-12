@@ -71,8 +71,9 @@ class Main extends ControllerBase{
 		}
 		$bts=$this->semantic->htmlButtonGroups("btsTests",["Run test cases","Save"]);
 		$bts->addClass("fluid");
-		$bts->getElement(0)->onClick("var form=getNextForm('form.toSubmit');if(form!=false) form.form('submit');");
+		$bts->getElement(0)->onClick("var form=getNextForm('form.toSubmit');if(form!=false) form.form('submit');")->addClass("teal")->addIcon("lightning");
 		$btAdd=$this->semantic->htmlButton("addTest","Add test case");
+		$btAdd->addIcon("plus");
 		$btAdd->getOnClick("main/addFormTestCase","#forms",["jqueryDone"=>"append"]);
 		$this->jquery->exec("setAceEditor('preparation');",true);
 		$this->jquery->exec("google.charts.load('current', {'packages':['corechart']});",true);
@@ -107,7 +108,9 @@ class Main extends ControllerBase{
 
 	private function getMainUid(){
 		if(!isset($_SESSION["uid"])){
-			$_SESSION["uid"]=$this->generateUid();
+			$uid=$this->generateUid();
+			$_SESSION["uid"]=$uid;
+			$_SESSION["execution"]=$_SESSION["benchmark"]->addExecution($uid);
 		}
 			return $_SESSION["uid"];
 	}
@@ -123,7 +126,7 @@ class Main extends ControllerBase{
 		$form->fieldAsElement("code","div","ui segment editor");
 		$btDelete=$this->semantic->htmlButton("delete-".$formId,"Delete test case","fluid");
 		$btDelete->setProperty("data-ajax", $id);
-		$btDelete->addIcon("remove circle outline",true,true);
+		$btDelete->addIcon("remove circle",true,true);
 		$btDelete->getOnClick('main/removeTest',"#info",["attr"=>"data-ajax"]);
 	}
 
@@ -198,7 +201,7 @@ class Main extends ControllerBase{
 
 					$testcase=$_SESSION["benchmark"]->getTestByCallback(function($test) use ($id){return $test->form==$id;});
 					if(isset($testcase)){
-						Models::addResult($testcase, $time, $output->status, $_SESSION["uid"]);
+						Models::addResult($_SESSION["execution"],$testcase, $time, $output->status);
 					}
 
 					$bt=$this->semantic->htmlButton("response-".$output->form," Time","fluid");

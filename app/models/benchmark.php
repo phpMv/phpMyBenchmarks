@@ -35,6 +35,11 @@ class Benchmark{
 	*/
 	private $user;
 
+	/**
+	 * @oneToMany("mappedBy"=>"benchmark","className"=>"models\Execution")
+	 */
+	private $executions;
+
 
 	/**
 	 * @manyToMany("targetEntity"=>"models\User","inversedBy"=>"benchstars")
@@ -44,6 +49,7 @@ class Benchmark{
 
 	public function __construct(){
 		$this->testcases=[];
+		$this->executions=[];
 	}
 
 	 public function getId(){
@@ -110,6 +116,14 @@ class Benchmark{
 		$this->user=$user;
 	}
 
+	public function addExecution($uid){
+		$exec=new Execution();
+		$exec->setUid($uid);
+		$exec->setBenchmark($this);
+		$this->executions[]=$exec;
+		return $exec;
+	}
+
 	public function addTestcase(Testcase $testcase){
 		$this->testcases[]=$testcase;
 		$testcase->setBenchmark($this);
@@ -162,15 +176,6 @@ class Benchmark{
 		return $result;
 	}
 
-	public function getStars() {
-		return $this->stars;
-	}
-
-	public function setStars($stars) {
-		$this->stars=$stars;
-		return $this;
-	}
-
 	public function getUsers() {
 		return $this->users;
 	}
@@ -189,6 +194,28 @@ class Benchmark{
 		return $this;
 	}
 
+	public function getUserstars() {
+		return $this->userstars;
+	}
 
+	public function setUserstars($userstars) {
+		$this->userstars=$userstars;
+		return $this;
+	}
 
+	public function getExecutions($uid=NULL) {
+		if(!isset($uid))
+			return $this->executions;
+		$executions=[];
+		foreach ($this->executions as $execution){
+			if($execution->getUid()==$uid)
+				$executions[]=$execution;
+		}
+		return $executions;
+	}
+
+	public function setExecutions($executions) {
+		$this->executions=$executions;
+		return $this;
+	}
 }

@@ -5,16 +5,22 @@ var getNextForm=function(identifier){
 	return false;
 };
 
-var setAceEditor=function(elementId){
+var setAceEditor=function(elementId,readOnly){
+	readOnly=readOnly || false;
 	var editor = ace.edit(elementId);
 	editor.setTheme("ace/theme/solarized_dark");
-	editor.getSession().setMode("ace/mode/php");
+	editor.getSession().setMode({path:"ace/mode/php", inline:true});
 	editor.setOptions({
-	    maxLines: 10,
-	    minLines: 2,
-	    showInvisibles: true,
-	    showGutter: true
-	});
+		maxLines: 10,
+		minLines: 2,
+		showInvisibles: true,
+		showGutter: !readOnly,
+		showPrintMargin: false,
+		readOnly: readOnly,
+		showLineNumbers: !readOnly,
+		highlightActiveLine: !readOnly,
+		highlightGutterLine: !readOnly
+		});
 };
 
 var drawChart=function (title,rows,div) {
