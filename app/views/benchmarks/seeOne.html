@@ -5,8 +5,16 @@
 			<h4>{{benchmark.getName()}}</h4>
 			<div class="ui segment editor" id="preparation">{{benchmark.getBeforeAll()}}</div>
 			<div class="ui segment">
-			{{ q["tests"] | raw }}
+			{{ tests | raw }}
 			</div>
+		</div>
+		<div class="active title">{{ q["header2"] | raw }}</div>
+		<div class="active content">
+		{{ q["list-executions"] | raw }}
+		</div>
+		<div class="active title">{{ q["header3"] | raw }}</div>
+		<div class="active content">
+			<div id="graph"></div>
 		</div>
 	</div>
 </div>

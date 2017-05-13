@@ -203,15 +203,16 @@ class Benchmark{
 		return $this;
 	}
 
-	public function getExecutions($uid=NULL) {
-		if(!isset($uid))
+	public function getExecutions() {
 			return $this->executions;
-		$executions=[];
-		foreach ($this->executions as $execution){
-			if($execution->getUid()==$uid)
-				$executions[]=$execution;
-		}
-		return $executions;
+	}
+
+	public function getExecution($uid=NULL) {
+			foreach ($this->executions as $execution){
+				if($execution->getUid()==$uid)
+					return $execution;
+			}
+			return null;
 	}
 
 	public function setExecutions($executions) {

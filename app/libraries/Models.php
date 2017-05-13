@@ -46,23 +46,25 @@ class Models {
 	}
 
 	public static function getResults(Benchmark $benchmark,$uid,$percent=true){
+		$execution=$benchmark->getExecution($uid);
+		$results=$execution->getResults();
+		return self::getChartResults($results,$percent);
+	}
+
+	public static function getChartResults($results,$percent=true){
 		$array=[];$return=[];
-		$executions=$benchmark->getExecutions($uid);
-		foreach ($executions as $execution){
-			$results=$execution->getResults();
-			foreach ($results as $result){
-				$time=$result->getTimer();
-				$array[$result->getTestcase()->getName()]=$time;
-				if($time!=0 && (!isset($min) || $time<$min))
-					$min=$time;
-			}
+		foreach ($results as $result){
+			$time=$result->getTimer();
+			$array[$result->getTestcase()->getName()]=$time;
+			if($time!=0 && (!isset($min) || $time<$min))
+				$min=$time;
 		}
-			foreach ($array as $k=>$v){
-				if($percent)
-					$return[]="['".$k."',".($v/$min*100)."]";
+		foreach ($array as $k=>$v){
+			if($percent)
+				$return[]="['".$k."',".($v/$min*100)."]";
 				else
 					$return[]="['".$k."',".$v."]";
-			}
+		}
 		return "[".\implode(",", $return)."]";
 	}
 
