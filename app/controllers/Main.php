@@ -8,9 +8,9 @@ use Ajax\semantic\html\elements\HtmlButton;
 use micro\orm\DAO;
 use models\Benchmark;
 use libraries\Models;
-use Ajax\semantic\html\elements\HtmlLabel;
 use libraries\UserAuth;
 use Ajax\semantic\html\elements\HtmlButtonGroups;
+use libraries\GUI;
 
  /**
  * Controller Main
@@ -151,12 +151,12 @@ class Main extends ControllerBase{
 		$testFile="test-".\md5($name).".php";
 		$filename=ROOT.DS."..".DS."server".DS."tests".DS.$testFile;
 		$model=ROOT.DS."..".DS."server".DS."test.tpl";
-		$this->openReplaceWrite($model, $filename,["%test%"=>$command,"%preparation%"=>$preparation]);
+		Models::openReplaceWrite($model, $filename,["%test%"=>$command,"%preparation%"=>$preparation]);
 		$params=["check.php","tests/".$testFile,$form,$id];
 		$content="php.bat";
 		$serverExchange=new ServerExchange($address,$port);
 		$responses=$serverExchange->send($action, $content, $params);
-		$this->displayMessages($responses,$id);
+		GUI::displayRunningMessages($this->jquery, $_SESSION["benchmark"], $_SESSION["execution"],$test,$responses,$id);
 		$this->jquery->exec("$('#".$form."').removeClass('toSubmit');var form=getNextForm('form.toSubmit');if(form!=false) form.form('submit'); else {\$('form.test').addClass('toSubmit');".
 			$this->jquery->getDeferred("Main/testsTerminate","#results")."}",true);
 		echo $this->jquery->compile();
@@ -164,7 +164,8 @@ class Main extends ControllerBase{
 
 	public function testsTerminate(){
 		$benchmark=$_SESSION["benchmark"];
-		$this->jquery->exec("drawChart('".$_SESSION["uid"]."',".Models::getResults($benchmark, $_SESSION["uid"]).",'graph');",true);
+		$execution=$_SESSION["execution"];
+		$this->jquery->exec("drawChart('".$_SESSION["uid"]."',".Models::getResults($execution).",'graph');",true);
 		echo $this->jquery->compile();
 
 		unset($_SESSION["uid"]);
@@ -182,53 +183,6 @@ class Main extends ControllerBase{
 		$str=\file_get_contents($source);
 		$str=self::replaceAll($keyAndValues,$str);
 		return \file_put_contents($destination,$str);
-	}
-
-	private function displayMessages($messages,$id){
-		$form="form".$id;
-		$i=0;
-		foreach ($messages as $message){
-			$obj=json_decode($message);
-			if($obj!==null){
-				if($obj->type==="output"){
-					$output=\json_decode($obj->content);
-					$this->showMessage(null,$output->status,$form."-".$i);
-					if($output->status!=="error"){
-						$time=$output->time;
-					}else{
-						$time="#N/A";
-					}
-
-					$testcase=$_SESSION["benchmark"]->getTestByCallback(function($test) use ($id){return $test->form==$id;});
-					if(isset($testcase)){
-						Models::addResult($_SESSION["execution"],$testcase, $time, $output->status);
-					}
-
-					$bt=$this->semantic->htmlButton("response-".$output->form," Time","fluid");
-					$bt->addIcon("history");
-					$bt->addLabel($time)->setPointing("left")->addClass("fluid");
-					$btInterne=$bt->getContent()[0];
-					$btInterne->addClass('fluid');
-					$btInterne->addPopup("Content",$output->content);
-					echo $bt->compile($this->jquery);
-				}elseif ($obj->type==="error"){
-					$this->showMessage($obj->content,$obj->type,$form."-".$i);
-				}
-			}
-			$i++;
-		}
-	}
-
-	private function showMessage($content,$style,$id){
-		if($style!=="info"){
-			$msg=$this->semantic->htmlLabel($id,$style);
-			$msg->addClass("fluid ".self::COLORS[$style]);
-			$msg->addIcon(self::ICONS[$style]);
-			if(isset($content) && $content!==""){
-				$msg->addPopup($style,$content);
-			}
-			echo $msg->compile($this->jquery);
-		}
 	}
 
 	public function initialize(){

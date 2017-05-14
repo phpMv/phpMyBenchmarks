@@ -18,6 +18,8 @@ class Benchmark{
 
 	private $phpVersion;
 
+	private $idFork;
+
 	/**
 	 * @manyToMany("targetEntity"=>"models\User","inversedBy"=>"benchstars")
 	 * @joinTable("name"=>"benchstar")
@@ -219,4 +221,14 @@ class Benchmark{
 		$this->executions=$executions;
 		return $this;
 	}
+
+	public function getIdFork() {
+		return $this->idFork;
+	}
+
+	public function setIdFork($idFork) {
+		$this->idFork=$idFork;
+		return $this;
+	}
+
 }

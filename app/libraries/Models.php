@@ -36,7 +36,7 @@ class Models {
 	 * @param string $status
 	 * @return Result
 	 */
-	public static function addResult(Execution $execution,Testcase $testcase,$calc,$status){
+	public static function addResult(Execution &$execution,Testcase $testcase,$calc,$status){
 		$result=new Result();
 		$result->setTimer($calc);
 		$result->setStatus($status);
@@ -45,8 +45,7 @@ class Models {
 		return $result;
 	}
 
-	public static function getResults(Benchmark $benchmark,$uid,$percent=true){
-		$execution=$benchmark->getExecution($uid);
+	public static function getResults(Execution $execution,$percent=true){
 		$results=$execution->getResults();
 		return self::getChartResults($results,$percent);
 	}
@@ -77,6 +76,14 @@ class Models {
 		return [];
 	}
 
+	public static function getTestIds(Benchmark $benchmark){
+		$result=[];
+		foreach ($benchmark->getTestcases() as $test){
+			$result[]=$test->getId();
+		}
+		return $result;
+	}
+
 	/**
 	 * @param array $executions
 	 * @return Execution
@@ -91,6 +98,10 @@ class Models {
 			}
 		}
 		return $last;
+	}
+
+	public static function countFork(Benchmark $benchmark){
+		return DAO::count("models\Benchmark","idFork=".$benchmark->getId());
 	}
 
 	public static function save($benchmark){
@@ -174,5 +185,16 @@ class Models {
 
 		if (!$full) $string = array_slice($string, 0, 1);
 		return $string ? implode(', ', $string) . ' ago' : 'just now';
+	}
+
+	public static function replaceAll($array,$subject){
+		array_walk($array, function(&$item){if(is_array($item)) $item=implode("\n", $item);});
+		return str_replace(array_keys($array), array_values($array), $subject);
+	}
+
+	public static function openReplaceWrite($source,$destination,$keyAndValues){
+		$str=\file_get_contents($source);
+		$str=self::replaceAll($keyAndValues,$str);
+		return \file_put_contents($destination,$str);
 	}
 }

@@ -7,10 +7,11 @@ use Ajax\semantic\html\elements\HtmlList;
 use models\Result;
 use libraries\UserAuth;
 use Ajax\semantic\html\elements\HtmlButton;
-use micro\db\Database;
-use Ajax\semantic\html\content\view\HtmlItem;
-use Ajax\semantic\html\elements\HtmlSegment;
 use libraries\GUI;
+use models\Benchmark;
+use models\Testcase;
+use libraries\ServerExchange;
+use models\Execution;
 
  /**
  * Controller Benchmarks
@@ -117,9 +118,26 @@ class Benchmarks extends ControllerBase{
 	}
 
 	public function seeOne($idBenchmark){
+		$user=UserAuth::getUser();
+		$benchmark=DAO::getOne("models\Benchmark", $idBenchmark);
+
+		$toolbar=$this->semantic->htmlButtonGroups("toolBar");
+		$toolbar->addClass("fluid");
+		if(isset($user)){
+			if($user->getId()==$benchmark->getUser()->getId()){
+				$toolbar->addItem("Run test cases")->getOnClick("Benchmarks/run/".$idBenchmark,"#testTerminate")->addClass("teal")->addIcon("lightning");
+				$toolbar->addItem("Update")->getOnClick("Main/benchmark/".$idBenchmark,"#main-container",["ajaxTransition"=>"random"])->addIcon("edit");
+			}else{
+				$toolbar->addItem("Fork")->getOnClick("Main/fork/".$idBenchmark,"#main-container",["ajaxTransition"=>"random"])->addIcon("fork");
+				$toolbar->addItem("Star")->getOnClick("Main/star/".$idBenchmark,"#main-container",["ajaxTransition"=>"random"])->addIcon("star");
+			}
+		}else{
+			$toolbar->addItem("Fork")->getOnClick("Main/fork/".$idBenchmark,"#main-container",["ajaxTransition"=>"random"])->addIcon("fork");
+		}
+
+
 		$header1=$this->semantic->htmlHeader("header1",3,"Code");
 		$header1->addIcon("code");
-		$benchmark=DAO::getOne("models\Benchmark", $idBenchmark);
 		$tests=DAO::getOneToMany($benchmark, "testcases");
 		$this->jquery->exec("setAceEditor('preparation',true);",true);
 		$testsView="";
@@ -133,12 +151,25 @@ class Benchmarks extends ControllerBase{
 
 		$header3=$this->semantic->htmlHeader("header3",3,"Graph");
 		$header3->addIcon("bar chart");
-		$executions=DAO::getOneToMany($benchmark, "executions");
+		$this->listExecs($benchmark);
+
+		$this->jquery->exec("$('.ui.accordion').accordion({'exclusive': false});",true);
+		$this->jquery->exec("google.charts.load('current', {'packages':['corechart']});",true);
+
+		$this->jquery->compile($this->view);
+		$this->loadView("benchmarks/seeOne.html",["benchmark"=>$benchmark,"tests"=>$testsView]);
+	}
+
+	public function listExecs($benchmark){
+		$executions=DAO::getAll("models\Execution", "idBenchmark=".$benchmark->getId()." ORDER BY createdAt DESC");
 		$listExecs=$this->semantic->dataTable("list-executions", "models\Execution", $executions);
 		$listExecs->setIdentifierFunction("getId");
-		$listExecs->setFields(["benchmark","createdAt","results"]);
+		$listExecs->setFields(["uid","createdAt","results"]);
+		$listExecs->setValueFunction("createdAt", function($str){ return Models::time_elapsed_string($str);});
+		$listExecs->setValueFunction("uid", function($str){ return \substr($str,0,7);});
+
 		$listExecs->setValueFunction("results",function($str,$exec){
-			$results=DAO::getOneToMany($exec, "results");
+			$results=DAO::getAll("Models\Result", "idExecution=".$exec->getId()." ORDER BY timer ASC");
 			$list=new HtmlList("");
 			$list->setHorizontal();
 			$count=\count($results);
@@ -160,12 +191,7 @@ class Benchmarks extends ControllerBase{
 		});
 		$listExecs->setActiveRowSelector("error");
 		$listExecs->getOnRow("click", "Benchmarks/seeExecutionResults","#ajax",["attr"=>"data-ajax"]);
-
-		$this->jquery->exec("$('.ui.accordion').accordion({'exclusive': false});",true);
-		$this->jquery->exec("google.charts.load('current', {'packages':['corechart']});",true);
-
-		$this->jquery->compile($this->view);
-		$this->loadView("benchmarks/seeOne.html",["benchmark"=>$benchmark,"tests"=>$testsView]);
+		return $listExecs;
 	}
 
 	public function seeExecutionResults($idExecution){
@@ -201,6 +227,58 @@ class Benchmarks extends ControllerBase{
 		$results=DAO::getOneToMany($execution, "results");
 		$this->jquery->exec("drawChart('".$execution->getUid()."',".Models::getChartResults($results,true).",'graph');",true);
 		echo $this->jquery->compile();
+	}
+
+	public function run($idBenchmark){
+		$benchmark=DAO::getOne("models\Benchmark", $idBenchmark);
+		DAO::getOneToMany($benchmark, "testcases");
+		$execution=$benchmark->addExecution(\md5(\microtime(true)));
+		$_SESSION["execution"]=$execution;
+		$testsIds=Models::getTestIds($benchmark);
+		$_SESSION["testsIds"]=$testsIds;
+		if(\sizeof($testsIds)>0){
+			$this->jquery->get("Benchmarks/runTest/".$testsIds[0],"#result-".$testsIds[0]);
+		}
+		echo $this->jquery->compile();
+	}
+
+	public function runTest($id){
+		$test=DAO::getOne("models\Testcase", $id);
+		$bench=$test->getBenchmark();
+		$execution=$_SESSION["execution"];
+		$id=$test->getId();
+		$form="form".$id;
+		$address="127.0.0.1";$port=9001;
+		$action="run";
+
+		$testFile="test-".\md5($test->getName()).".php";
+		$filename=ROOT.DS."..".DS."server".DS."tests".DS.$testFile;
+		$model=ROOT.DS."..".DS."server".DS."test.tpl";
+		Models::openReplaceWrite($model, $filename,["%test%"=>$test->getCode(),"%preparation%"=>$bench->getBeforeAll()]);
+		$params=["check.php","tests/".$testFile,$form,$id];
+		$content="php.bat";
+		$serverExchange=new ServerExchange($address,$port);
+		$responses=$serverExchange->send($action, $content, $params);
+		GUI::displayRunningMessages($this->jquery, $bench, $execution, $test,$responses, $id);
+		\array_shift($_SESSION["testsIds"]);
+		if(\sizeof($_SESSION["testsIds"])>0){
+			$testsIds=$_SESSION["testsIds"];
+			$this->jquery->get("Benchmarks/runTest/".$testsIds[0],"#result-".$testsIds[0]);
+		}else{
+			$this->jquery->get("Benchmarks/testTerminate","#list-executions","{}",NULL,true,"replaceWith","random");
+		}
+		echo $this->jquery->compile();
+	}
+
+	public function testTerminate(){
+		$execution=$_SESSION["execution"];
+		DAO::insert($execution);
+		foreach ($execution->getResults() as $result){
+			DAO::insert($result);
+		}
+		$benchmark=$execution->getBenchmark();
+		echo $this->listExecs($benchmark);
+		echo $this->jquery->compile($this->view);
 	}
 
 	public function star($idBenchmark){
