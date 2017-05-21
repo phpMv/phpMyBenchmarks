@@ -61,9 +61,15 @@ class Main extends ControllerBase{
 }');
 		}
 		$_SESSION["benchmark"]=$benchmark;
+		GUI::getBenchmarkName($this->jquery, $benchmark);
 		$prepForm=$this->semantic->htmlForm("preparation-form");
 		$prepForm->addInput("bench-name","Name","text",$benchmark->getName());
 		$prepForm->addTextarea("bench-description", "Description",$benchmark->getDescription(),"Description",2);
+		$fields=$prepForm->addFields();
+		$input=$fields->addInput("iterations","Iterations count","number",$benchmark->getIterations(),"")->setWidth(6);
+		$input->getDataField()->setProperty("max", "1000000");
+		$fields->addDropdown("phpVersion",["5.6","7.0","7.1"],"php version","5.6");
+
 		$prepForm->addElement("preparation",$benchmark->getBeforeAll(),"Preparation","div","ui segment editor");
 		$forms="";
 		foreach ($benchmark->getTestcases() as $testcase){
@@ -122,7 +128,7 @@ class Main extends ControllerBase{
 		$form->addClass("test toSubmit");
 		$form->setFields(["name","code"]);
 		$this->jquery->exec("setAceEditor('".$formId."-code-0');",true);
-		$form->setSubmitParams("Main/send/".$id,"#response-".$formId,["params"=>"{'bench-name':$('#bench-name').val(),'bench-description':$('#bench-description').val(),'preparation':ace.edit('preparation').getValue(),'code':ace.edit('".$formId."-code-0').getValue()}"]);
+		$form->setSubmitParams("Main/send/".$id,"#response-".$formId,["params"=>"{'bench-name':$('#bench-name').val(),'bench-description':$('#bench-description').val(),'preparation':ace.edit('preparation').getValue(),'code':ace.edit('".$formId."-code-0').getValue(),'iterations':$('#iterations').val()}"]);
 		$form->fieldAsElement("code","div","ui segment editor");
 		$btDelete=$this->semantic->htmlButton("delete-".$formId,"Delete test case","fluid");
 		$btDelete->setProperty("data-ajax", $id);
@@ -131,14 +137,19 @@ class Main extends ControllerBase{
 	}
 
 	public function send($id){
+		$isWin=\strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+		$prefix=($isWin)?"":ROOT.DS."..".DS."server".DS;
+
 		$this->getMainUid();
 		$command=$_POST["code"];
 		$preparation=$_POST["preparation"];
+		$iterations=min($_POST["iterations"],1000000);
 		$name=$_POST["name"];
 		$benchmark=$_SESSION["benchmark"];
 		$benchmark->setBeforeAll($preparation);
 		$benchmark->setName($_POST["bench-name"]);
 		$benchmark->setDescription($_POST["bench-description"]);
+		$benchmark->setIterations($iterations);
 
 		$test=$benchmark->getTestByCallback(function($test) use ($id){return $test->form==$id;});
 		$test->setCode($command);
@@ -151,9 +162,9 @@ class Main extends ControllerBase{
 		$testFile="test-".\md5($name).".php";
 		$filename=ROOT.DS."..".DS."server".DS."tests".DS.$testFile;
 		$model=ROOT.DS."..".DS."server".DS."test.tpl";
-		Models::openReplaceWrite($model, $filename,["%test%"=>$command,"%preparation%"=>$preparation]);
-		$params=["check.php","tests/".$testFile,$form,$id];
-		$content="php.bat";
+		Models::openReplaceWrite($model, $filename,["%test%"=>$command,"%preparation%"=>$preparation,"%iterations%"=>$iterations]);
+		$params=[$prefix."check.php",$prefix."tests/".$testFile,$form,$id];
+		$content=($isWin)?"php-test.bat":$prefix."php-test.sh";
 		$serverExchange=new ServerExchange($address,$port);
 		$responses=$serverExchange->send($action, $content, $params);
 		GUI::displayRunningMessages($this->jquery, $_SESSION["benchmark"], $_SESSION["execution"],$test,$responses,$id);
@@ -185,9 +196,37 @@ class Main extends ControllerBase{
 		return \file_put_contents($destination,$str);
 	}
 
+	public function star($idBenchmark){
+		DAO::$db->execute("INSERT INTO benchstar(idBenchmark,idUser) VALUES(".$idBenchmark.",".UserAuth::getUser()->getId().");");
+		echo GUI::starButton($this->jquery, $idBenchmark);
+		echo $this->jquery->compile($this->view);
+	}
+
+	public function unstar($idBenchmark){
+		DAO::$db->execute("DELETE FROM benchstar WHERE idBenchmark=".$idBenchmark." AND idUser=".UserAuth::getUser()->getId().";");
+		echo GUI::starButton($this->jquery, $idBenchmark);
+		echo $this->jquery->compile($this->view);
+	}
+
+	public function fork($idBenchmark){
+		$benchmark=DAO::getOne("models\Benchmark", $idBenchmark);
+		$tests=DAO::getOneToMany($benchmark, "testcases");
+		$user=UserAuth::getUser();
+		$benchmark->setUser($user);
+		$benchmark->setId(NULL);
+		$benchmark->setIdFork($idBenchmark);
+		$benchmark->setCreatedAt(\date("Y-m-d H:i:s"));
+		DAO::insert($benchmark);
+		foreach ($tests as $test){
+			$test->setBenchmark($benchmark);
+			$test->setId(null);
+			$test->setCreatedAt(\date("Y-m-d H:i:s"));
+			DAO::insert($test);
+		}
+		$this->forward("controllers\Main","benchmark",["id"=>$benchmark->getId()],true,true);
+	}
+
 	public function initialize(){
 		parent::initialize();
-		/*if(!UserAuth::isAuth())
-			$this->jquery->get("Auth/infoUser","#divInfoUser","{}",null,false);*/
 	}
 }

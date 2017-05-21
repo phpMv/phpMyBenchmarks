@@ -1,6 +1,6 @@
 <?php
 global $argv;
-$_steps=1000000;
+$_steps=%iterations%;
 $_status="success";
 %preparation%
 $_start=microtime(true);

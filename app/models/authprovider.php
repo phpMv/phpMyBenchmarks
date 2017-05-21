@@ -2,7 +2,7 @@
 namespace models;
 
 /**
- * @table("name"=>"authprovider")
+ * @table("name"=>"Authprovider")
  */
 class Authprovider{
 	/**

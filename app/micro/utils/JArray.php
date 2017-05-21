@@ -42,6 +42,24 @@ class JArray {
 		return $prefix . $extsStr;
 	}
 
+	public static function toArray($object){
+		$result=[];
+		if(\is_array($object)){
+			foreach ($object as $o){
+				$result[]=self::toArray($o);
+			}
+		}else{
+			$reflector = new \ReflectionObject($object);
+			$nodes = $reflector->getProperties();
+			foreach ($nodes as  $node) {
+				$nod=$reflector->getProperty($node->getName());
+				$nod->setAccessible(true);
+				$result[$node->getName()]=$nod->getValue($object);
+			}
+		}
+		return $result;
+	}
+
 	private static function parseValue($v, $prefix="") {
 		if (\is_bool($v) === true) {
 			$result=StrUtils::getBooleanStr($v);

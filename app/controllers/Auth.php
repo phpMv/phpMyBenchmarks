@@ -39,10 +39,9 @@ class Auth extends ControllerBase{
 			$users=DAO::getAll("models\User","login='".$_POST["login"]."' OR email='".$_POST["login"]."'");
 			foreach ($users as $user){
 				if($user->getPassword()==@$_POST["password"]){
-					$user->avatar="public/img/male.png";
 					$_SESSION["user"]=$user;
 					$header=$this->jquery->semantic()->htmlHeader("headerUser",3);
-					$header->asImage($user->avatar, $user->getLogin(),"connected");
+					$header->asImage($user->getAvatar(), $user->getLogin(),"connected");
 					echo GUI::showSimpleMessage($this->jquery, $header, "info","");
 					$this->forward("controllers\Main","index",[],true,true);
 					$this->jquery->get("Auth/infoUser","#divInfoUser","{}",null,false);
@@ -75,6 +74,7 @@ class Auth extends ControllerBase{
 	public function createAccount(){
 		$user=new User();
 		RequestUtils::setValuesToObject($user,$_POST);
+		$user->setAvatar("public/img/male.png");
 		$key=md5(\microtime(true));
 		$user->setAuthkey($key);
 		try{
@@ -158,10 +158,11 @@ class Auth extends ControllerBase{
 				$user->setEmail($user_profile->email);
 				$user->setAuthProvider($dbProvider);
 				$user->setAuthkey($user_profile->identifier);
+				$user->setAvatar($user_profile->photoURL);
 				DAO::insert($user);
 			}
 			$_SESSION["user"]=$user;
-			$user->avatar=$user_profile->photoURL;
+			$user->setAvatar($user_profile->photoURL);
 			setcookie("autoConnect", $provider, time()+3600, "/");
 			if (array_key_exists("action", $_SESSION)) {
 				Startup::runAction($_SESSION["action"], false, false);
@@ -186,7 +187,7 @@ class Auth extends ControllerBase{
 		unset($_SESSION["user"]);
 
 		$header=$this->jquery->semantic()->htmlHeader("headerUser",3);
-		$header->asImage($user->avatar, $user->getLogin(),"Bye!");
+		$header->asImage($user->getAvatar(), $user->getLogin(),"Bye!");
 		$message=$this->semantic->htmlMessage("message",$header);
 		$message->setDismissable()->setTimeout(5000);
 		echo $message->compile($this->jquery);

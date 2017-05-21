@@ -52,11 +52,11 @@ class View {
 	 */
 	public function render($viewName, $asString=false) {
 		$config=Startup::getConfig();
-		$fileName=ROOT . DS . "views/" . $viewName;
+		$fileName=ROOT . DS . "views".DS . $viewName;
 		$ext=\pathinfo($fileName, PATHINFO_EXTENSION);
 		if ($ext === null)
 			$viewName=$viewName . ".php";
-		$fileName=ROOT . DS . "views/" . $viewName;
+		$fileName=ROOT . DS . "views".DS . $viewName;
 		if (\file_exists($fileName)) {
 			$data=$this->vars;
 			if (!StrUtils::endswith($fileName, ".php") && @$config["templateEngine"] instanceof TemplateEngine) {

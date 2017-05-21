@@ -12,6 +12,9 @@ use models\Benchmark;
 use models\Testcase;
 use libraries\ServerExchange;
 use models\Execution;
+use Ajax\semantic\html\elements\html5\HtmlLink;
+use Ajax\common\html\HtmlDoubleElement;
+use Ajax\semantic\html\base\HtmlSemDoubleElement;
 
  /**
  * Controller Benchmarks
@@ -30,70 +33,108 @@ class Benchmarks extends ControllerBase{
 	}
 
 	public function all(){
-		$benchmarks=DAO::getAll("models\Benchmark","",true,true);
-		$this->displayBenchmarks($benchmarks,"All benchmarks");
+		$benchmarks=DAO::getAll("models\Benchmark","1=1 ORDER BY createdAt DESC".$this->getLimitOffset(),true,true);
+		$this->displayBenchmarks($benchmarks,"All benchmarks","Benchmarks/all",DAO::count("models\Benchmark"));
 	}
 
 	public function my(){
-		$benchmarks=DAO::getAll("models\Benchmark","idUser=".UserAuth::getUser()->getId()." ORDER BY createdAt DESC",true,true);
-		$this->displayBenchmarks($benchmarks,"My benchmarks");
+		$benchmarks=DAO::getAll("models\Benchmark","idUser=".UserAuth::getUser()->getId()." ORDER BY createdAt DESC".$this->getLimitOffset(),true,true);
+		$this->displayBenchmarks($benchmarks,"My benchmarks","Benchmarks/my",DAO::count("models\Benchmark","idUser=".UserAuth::getUser()->getId()));
 	}
 
-	private function displayBenchmarks($benchMarks,$title){
+	private function getLimitOffset($count=10){
+		$p=1;
+		if(isset($_POST["p"])){
+			$p=$_POST['p'];
+		}
+		return " LIMIT ".(($p-1)*$count).",".$count;
+	}
+
+	private function createDataBenchmark($benchMarks,$jsonUrl){
 		$deBenchs=$this->semantic->dataTable("deBenchs", "models\Benchmark", $benchMarks);
-		$deBenchs->setCompact(true);
 		$deBenchs->setIdentifierFunction("getId");
+
+		$deBenchs->setCompact(true);
 		$deBenchs->setFields(['stars','name','tests','results','createdAt']);
 		$deBenchs->setCaptions(['Stars','Name','Tests','Latest results','Created at','Actions']);
+
 		$deBenchs->setValueFunction("stars", function($str,$bench){
-			$count=DAO::$db->count('benchstar',"idBenchmark=".$bench->getId());
-			$bt=new HtmlButton("bt-star-".$bench->getId());
-			$bt->addIcon("star");
-			$bt->addLabel($count);
-			$bt->getContent()[0]->addClass("icon");
-			return $bt;
+			return GUI::starButton($this->jquery, $bench);
 		});
-		$deBenchs->setValueFunction("tests", function($str,$bench){return new HtmlLabel("",\count($bench->getTestcases()));});
-		$deBenchs->setValueFunction("results",function($str,$bench){
-			$results=Models::getLastResults($bench,true);
-			$list=new HtmlList("");
-			$list->setHorizontal();
-			$count=\count($results);
-			$lblFast="";$lblSlow="";
-			if($count>0){
-				if($count>1){
-					$lblFast=(new HtmlLabel(""))->addClass("green empty circular")." ";
-					$lblSlow=(new HtmlLabel(""))->addClass("orange empty circular")." ";
-				}
-				$this->addListResult($list, $results[0],$lblFast);
-				for ($i=1;$i<$count-1;$i++){
-					$this->addListResult($list, $results[$i]);
-				}
-				if($count>1){
-					$this->addListResult($list, $results[$count-1],$lblSlow);
-				}
-			}
-			return $list;
-		});
-		$deBenchs->setValueFunction("createdAt", function($time){return Models::time_elapsed_string($time,false);});
 
-		$deBenchs->addEditDeleteButtons(true,["ajaxTransition"=>"random"],function($edit,$bench){
-			if(!isset($_SESSION["user"]) || $bench->getUser()->getId()!=$_SESSION["user"]->getId())
-				$edit->asIcon("fork");
-		},
-		function($delete,$bench){
-			if(!isset($_SESSION["user"]) || $bench->getUser()->getId()!=$_SESSION["user"]->getId())
-				$delete->wrap("<!--","-->");
-		});
-		$deBenchs->insertInFieldButton(5, "",true,function($see){
-			$see->addClass("see")->asIcon("unhide");
-		});
-		$deBenchs->setUrls(["edit"=>"Main/benchmark","delete"=>"Benchmarks/delete"]);
-		$deBenchs->setTargetSelector(["edit"=>"#main-container","delete"=>"#info"]);
+			$deBenchs->setValueFunction("tests", function($str,$bench){return new HtmlLabel("",\count($bench->getTestcases()));});
 
-		$this->jquery->getOnClick(".see", "Benchmarks/seeOne","#main-container",["attr"=>"data-ajax"]);
-		$this->jquery->compile($this->view);
-		$this->loadView("benchmarks/display.html",["title"=>$title]);
+			$deBenchs->setValueFunction("results",function($str,$bench){
+				$results=Models::getLastResults($bench,true);
+				$list=new HtmlList("");
+				$list->setHorizontal();
+				$count=\count($results);
+				$lblFast="";$lblSlow="";
+				if($count>0){
+					if($count>1){
+						$lblFast=(new HtmlLabel(""))->addClass("green empty circular")." ";
+						$lblSlow=(new HtmlLabel(""))->addClass("orange empty circular")." ";
+					}
+					$this->addListResult($list, $results[0],$lblFast);
+					for ($i=1;$i<$count-1;$i++){
+						$this->addListResult($list, $results[$i]);
+					}
+					if($count>1){
+						$this->addListResult($list, $results[$count-1],$lblSlow);
+					}
+				}
+				return $list;
+			});
+
+			$deBenchs->setValueFunction("name", function($name,$bench){
+				$elm=new HtmlSemDoubleElement("name-".$bench->getId(),"div");
+				$elm->setContent($name);
+				$elm->addPopupHtml(GUI::getBenchmarkName($this->jquery, $bench),NULL,["setFluidWidth"=>true,"on"=>"click"]);
+				return $elm;
+			});
+
+			$deBenchs->setValueFunction("createdAt", function($time){return Models::time_elapsed_string($time,false);});
+
+			$deBenchs->addEditDeleteButtons(true,["ajaxTransition"=>"random"],function($edit,$bench){
+				if(!isset($_SESSION["user"]) || $bench->getUser()->getId()!=$_SESSION["user"]->getId())
+					$edit->wrap("<!--","-->");
+			},
+			function($delete,$bench){
+				if(!isset($_SESSION["user"]) || $bench->getUser()->getId()!=$_SESSION["user"]->getId())
+					$delete->wrap("<!--","-->");
+			});
+			$deBenchs->insertInFieldButton(5, "",true,function($fork,$bench){
+				if(!isset($_SESSION["user"]) || $bench->getUser()->getId()!=$_SESSION["user"]->getId())
+					$fork->addClass("fork")->asIcon("fork");
+					else
+						$fork->wrap("<!--","-->");
+			});
+			$deBenchs->insertInFieldButton(5, "",true,function($see){
+				$see->addClass("see")->asIcon("unhide");
+			});
+
+			$deBenchs->setUrls(["refresh"=>$jsonUrl,"edit"=>"Main/benchmark","delete"=>"Benchmarks/delete"]);
+			$deBenchs->setTargetSelector(["edit"=>"#main-container","delete"=>"#info"]);
+
+			$this->jquery->getOnClick(".see", "Benchmarks/seeOne","#main-container",["attr"=>"data-ajax"]);
+			$this->jquery->getOnClick(".fork", "Main/fork","#main-container",["attr"=>"data-ajax"]);
+			return $deBenchs;
+	}
+
+	private function displayBenchmarks($benchMarks,$title,$jsonUrl,$total_rowcount,$count=10){
+		$deBenchs=$this->createDataBenchmark($benchMarks, $jsonUrl);
+
+		if(isset($_POST["p"])){
+			$deBenchs->paginate($_POST["p"], $total_rowcount,$count);
+			$deBenchs->refresh();
+			$s= $this->jquery->compile($this->view);
+			echo $deBenchs;
+			echo $s;
+		}else{
+			$deBenchs->paginate(1, $total_rowcount,$count);
+			$this->jquery->compile($this->view);
+			$this->loadView("benchmarks/display.html",["title"=>$title]);
+		}
 	}
 
 	private function addListResult(HtmlList $list,Result $result,$tag=""){
@@ -120,20 +161,8 @@ class Benchmarks extends ControllerBase{
 	public function seeOne($idBenchmark){
 		$user=UserAuth::getUser();
 		$benchmark=DAO::getOne("models\Benchmark", $idBenchmark);
+		GUI::getBenchmarkTop($this->jquery,$benchmark,$user);
 
-		$toolbar=$this->semantic->htmlButtonGroups("toolBar");
-		$toolbar->addClass("fluid");
-		if(isset($user)){
-			if($user->getId()==$benchmark->getUser()->getId()){
-				$toolbar->addItem("Run test cases")->getOnClick("Benchmarks/run/".$idBenchmark,"#testTerminate")->addClass("teal")->addIcon("lightning");
-				$toolbar->addItem("Update")->getOnClick("Main/benchmark/".$idBenchmark,"#main-container",["ajaxTransition"=>"random"])->addIcon("edit");
-			}else{
-				$toolbar->addItem("Fork")->getOnClick("Main/fork/".$idBenchmark,"#main-container",["ajaxTransition"=>"random"])->addIcon("fork");
-				$toolbar->addItem("Star")->getOnClick("Main/star/".$idBenchmark,"#main-container",["ajaxTransition"=>"random"])->addIcon("star");
-			}
-		}else{
-			$toolbar->addItem("Fork")->getOnClick("Main/fork/".$idBenchmark,"#main-container",["ajaxTransition"=>"random"])->addIcon("fork");
-		}
 
 
 		$header1=$this->semantic->htmlHeader("header1",3,"Code");
@@ -142,7 +171,7 @@ class Benchmarks extends ControllerBase{
 		$this->jquery->exec("setAceEditor('preparation',true);",true);
 		$testsView="";
 		foreach ($tests as $test){
-			$testsView.=$this->loadView("benchmarks\seeOneTest.html",["id"=>$test->getId(),"name"=>$test->getName(),"code"=>\htmlentities($test->getCode())],true);
+			$testsView.=$this->loadView("benchmarks/seeOneTest.html",["id"=>$test->getId(),"name"=>$test->getName(),"code"=>$test->getCode()],true);
 			$this->jquery->exec("setAceEditor('code-".$test->getId()."',true);",true);
 		}
 
@@ -169,7 +198,7 @@ class Benchmarks extends ControllerBase{
 		$listExecs->setValueFunction("uid", function($str){ return \substr($str,0,7);});
 
 		$listExecs->setValueFunction("results",function($str,$exec){
-			$results=DAO::getAll("Models\Result", "idExecution=".$exec->getId()." ORDER BY timer ASC");
+			$results=DAO::getAll("models\Result", "idExecution=".$exec->getId()." ORDER BY timer ASC");
 			$list=new HtmlList("");
 			$list->setHorizontal();
 			$count=\count($results);
@@ -243,6 +272,8 @@ class Benchmarks extends ControllerBase{
 	}
 
 	public function runTest($id){
+		$isWin=\strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+		$prefix=($isWin)?"":ROOT.DS."..".DS."server".DS;
 		$test=DAO::getOne("models\Testcase", $id);
 		$bench=$test->getBenchmark();
 		$execution=$_SESSION["execution"];
@@ -254,9 +285,9 @@ class Benchmarks extends ControllerBase{
 		$testFile="test-".\md5($test->getName()).".php";
 		$filename=ROOT.DS."..".DS."server".DS."tests".DS.$testFile;
 		$model=ROOT.DS."..".DS."server".DS."test.tpl";
-		Models::openReplaceWrite($model, $filename,["%test%"=>$test->getCode(),"%preparation%"=>$bench->getBeforeAll()]);
-		$params=["check.php","tests/".$testFile,$form,$id];
-		$content="php.bat";
+		Models::openReplaceWrite($model, $filename,["%test%"=>$test->getCode(),"%preparation%"=>$bench->getBeforeAll(),"%iterations%"=>$bench->getIterations()]);
+		$params=[$prefix."check.php",$prefix."tests/".$testFile,$form,$id];
+		$content=($isWin)?"php-test.bat":$prefix."php-test.sh";
 		$serverExchange=new ServerExchange($address,$port);
 		$responses=$serverExchange->send($action, $content, $params);
 		GUI::displayRunningMessages($this->jquery, $bench, $execution, $test,$responses, $id);
@@ -281,8 +312,41 @@ class Benchmarks extends ControllerBase{
 		echo $this->jquery->compile($this->view);
 	}
 
-	public function star($idBenchmark){
+	public function stars($idBenchmark){
+		$benchmark=DAO::getOne("models\Benchmark", $idBenchmark);
+		echo GUI::getBenchmarkTop($this->jquery, $benchmark,UserAuth::getUser());
+		echo $this->semantic->htmlHeader("",2,"Stargazers");
+		$userstars=DAO::getManyToMany($benchmark, "userstars");
+		$list=$this->semantic->htmlCardGroups("list-user-stars");
+		$list->fromDatabaseObjects($userstars, function($user) use ($list){
+			$image=$user->getAvatar();
+			$image=($image!=null && $image!="")?$image:"public/img/male.png";
+			$card=$list->newItem("card-".$user->getId());
+			$card->addItemContent(Models::getUserName($user))->addImage($image,"","mini")->setFloated("left")->asAvatar();
+			return $card;
 
+		});
+		echo $list;
+		echo $this->jquery->compile($this->view);
+	}
+
+	public function forks($idBenchmark){
+		$benchmark=DAO::getOne("models\Benchmark", $idBenchmark);
+		echo GUI::getBenchmarkTop($this->jquery, $benchmark,UserAuth::getUser());
+		echo $this->semantic->htmlHeader("",2,"Forks");
+		$forks=DAO::getAll("models\Benchmark","idFork=".$idBenchmark);
+		$list=$this->semantic->htmlCardGroups("list-user-stars");
+		$list->fromDatabaseObjects($forks, function($bench) use ($list){
+			$card=$list->newItem("card-".$bench->getId());
+			$seg=new HtmlLink("forked-".$bench->getId(),"#",Models::getBenchmarkName($bench,false));
+			$seg->getOnClick("Benchmarks/seeOne/".$bench->getId(),"#main-container");
+			$seg->addIcon("fork");
+			$card->addItemContent($seg);
+			return $card;
+
+		});
+		echo $list;
+		echo $this->jquery->compile($this->view);
 	}
 
 	private function showSimpleMessage($content,$type,$icon="info",$timeout=NULL){

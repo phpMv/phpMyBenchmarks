@@ -18,6 +18,8 @@ class Benchmark{
 
 	private $phpVersion;
 
+	private $iterations;
+
 	private $idFork;
 
 	/**
@@ -230,5 +232,15 @@ class Benchmark{
 		$this->idFork=$idFork;
 		return $this;
 	}
+
+	public function getIterations() {
+		return $this->iterations;
+	}
+
+	public function setIterations($iterations) {
+		$this->iterations=$iterations;
+		return $this;
+	}
+
 
 }

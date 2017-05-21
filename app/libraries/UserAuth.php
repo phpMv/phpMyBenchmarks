@@ -31,15 +31,10 @@ class UserAuth {
 		$user=self::getUser();
 		\ob_start();
 		if(isset($user)){
-			if(isset($user->avatar)){
-				$img=new HtmlImage("img-user",$user->avatar);
-				$img->addClass("mini rounded");
-				$dd=$jquery->semantic()->htmlDropdown("ddUser",$img);
+			$img=new HtmlImage("img-user",$user->getAvatar());
+			$img->addClass("mini rounded");
+			$dd=$jquery->semantic()->htmlDropdown("ddUser",$img);
 
-			}else{
-				$dd=$jquery->semantic()->htmlDropdown("ddUser");
-				$dd->addIconP("user");
-			}
 			$dd->addHeaderItem("Signed in as <b>".$user->getLogin()."</b>");
 			$dd->addDividerItem();
 			$dd->addItem("Create benchmark")->setProperty("data-ajax", "Main/benchmark");

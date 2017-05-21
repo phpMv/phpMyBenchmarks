@@ -12,6 +12,8 @@ class User{
 
 	private $password;
 
+	private $avatar;
+
 	/**
 	 * @column("name"=>"authkey","nullable"=>true)
 	 */
@@ -99,6 +101,18 @@ class User{
 		$this->benchstars=$benchstars;
 		return $this;
 	}
+
+	public function getAvatar() {
+		if(!isset($this->avatar))
+			return "public/img/male.png";
+		return $this->avatar;
+	}
+
+	public function setAvatar($avatar) {
+		$this->avatar=$avatar;
+		return $this;
+	}
+
 
 
 

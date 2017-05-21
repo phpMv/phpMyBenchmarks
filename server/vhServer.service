@@ -1,0 +1,13 @@
+[Unit]
+Description=vhServer
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/var/www/html/phpmybenchmarks/server
+ExecStart=/bin/sh -c "exec java -jar /var/www/html/phpmybenchmarks/server/vhServer.jar 9001 20"
+User=root
+
+[Install]
+WantedBy=multi-user.target
+

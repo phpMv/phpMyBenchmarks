@@ -16,7 +16,7 @@ return array(
 		"test"=>false,
 		"debug"=>false,
 		"di"=>["jquery"=>function(){
-							$jquery=new Ajax\php\micro\JsUtils(["defer"=>true]);
+							$jquery=new Ajax\php\micro\JsUtils(["defer"=>true,"debug"=>false]);
 							$jquery->setAjaxLoader("<img class=\"loader\" src=\"public/img/hourglass.svg\">");
 							$jquery->semantic(new Ajax\Semantic());
 							return $jquery;

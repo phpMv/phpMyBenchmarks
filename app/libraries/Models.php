@@ -7,6 +7,8 @@ use models\Testcase;
 use models\Result;
 use micro\orm\DAO;
 use models\Execution;
+use models\User;
+use micro\utils\JArray;
 
 class Models {
 	const TIME_UNITS=[" "=>1,"m"=>0.001,"µ"=>0.000001,"n"=>0.000000001];
@@ -59,12 +61,35 @@ class Models {
 				$min=$time;
 		}
 		foreach ($array as $k=>$v){
-			if($percent)
+			if(isset($min) && $percent)
 				$return[]="['".$k."',".($v/$min*100)."]";
-				else
-					$return[]="['".$k."',".$v."]";
+			else
+				$return[]="['".$k."',".$v."]";
 		}
 		return "[".\implode(",", $return)."]";
+	}
+
+	public static function getBenchmarkName(Benchmark $benchmark,$recursive=true){
+		$return=[];
+		$result=$benchmark->getName();
+		$user=$benchmark->getUser();
+		if($user instanceof User){
+			$result=$user->getLogin()."/".$result;
+		}
+		$return[]=$result;
+		if($benchmark->getIdFork()!=NULL && $recursive){
+			$forked=DAO::getOne("models\Benchmark", $benchmark->getIdFork());
+			if(isset($forked))
+				$return[]=self::getBenchmarkName($forked,false)[0];
+		}
+		return $return;
+	}
+
+	public static function getUserName($user){
+		$result=$user->getLogin();
+		if($user->getAuthProvider()!=null)
+			$result.="@".$user->getAuthProvider()->getName();
+		return $result;
 	}
 
 	public static function getLastResults(Benchmark $benchmark,$percent=true){
@@ -102,6 +127,28 @@ class Models {
 
 	public static function countFork(Benchmark $benchmark){
 		return DAO::count("models\Benchmark","idFork=".$benchmark->getId());
+	}
+
+	public static function countStar($benchmark){
+		if($benchmark instanceof Benchmark)
+			$id=$benchmark->getId();
+		else{
+			$id=$benchmark;
+			}
+		return DAO::$db->count('benchstar',"idBenchmark=".$id);
+	}
+
+	public static function stared($benchmark){
+		if($benchmark instanceof Benchmark)
+			$id=$benchmark->getId();
+			else{
+				$id=$benchmark;
+			}
+		$where="idBenchmark=".$id;
+		if(UserAuth::isAuth()){
+			$where.=" AND idUser=".UserAuth::getUser()->getId();
+		}
+		return DAO::$db->count('benchstar',$where)==1;
 	}
 
 	public static function save($benchmark){
@@ -196,5 +243,10 @@ class Models {
 		$str=\file_get_contents($source);
 		$str=self::replaceAll($keyAndValues,$str);
 		return \file_put_contents($destination,$str);
+	}
+
+	public static function getJsonBenchmarks($page,$condition="1=1",$count=15){
+		$benchmarks=DAO::getAll("models\Benchmark",$condition." limit ".(($page-1)*$count).",".$count);
+		print_r(JArray::toArray($benchmarks));
 	}
 }

@@ -133,7 +133,7 @@ class DAO {
 				$joinTableCursor=self::getSQLForJoinTable($instance, $parser);
 				foreach ( $joinTableCursor as $row ) {
 					$fkv=$row[$parser->getFkField()];
-					$tmp=self::getOne($parser->getTargetEntity(), "`" . $parser->getPk() . "`='" . $fkv . "'", false, false, $useCache);
+					$tmp=self::getOne($parser->getTargetEntity(), "`" . $parser->getPk() . "`='" . $fkv . "'", true, false, $useCache);
 					array_push($ret, $tmp);
 				}
 			} else {

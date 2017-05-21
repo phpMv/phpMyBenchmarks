@@ -34,3 +34,7 @@
 	height: 66px;
 	width: 66px;
 }
+
+.ui.popup{
+	min-width: max-content!important;
+}

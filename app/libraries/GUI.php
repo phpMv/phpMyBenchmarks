@@ -7,6 +7,8 @@ use Ajax\semantic\html\elements\HtmlButton;
 use models\Benchmark;
 use models\Execution;
 use models\Testcase;
+use models\User;
+use Ajax\Semantic;
 
 class GUI {
 
@@ -92,5 +94,63 @@ class GUI {
 			}
 			echo $msg->compile($jquery);
 		}
+	}
+
+	public static function forkButton(JsUtils $jquery,Benchmark $benchmark){
+		$id=$benchmark->getId();
+		$bt=$jquery->semantic()->htmlButton("bt-fork-".$id,"Fork");
+		$bt->addIcon("fork");
+		$bt->addLabel(Models::countFork($benchmark))->setPointing("left")->getOnClick("Benchmarks/forks/".$id,"#main-container",["ajaxTransition"=>"random"]);
+		$bt->getOnClick("Main/fork/".$id,"#main-container",["ajaxTransition"=>"random"]);
+		return $bt;
+	}
+
+	public static function getBenchmarkName(JsUtils $jquery,Benchmark $benchmark,$recursive=true){
+		$name=Models::getBenchmarkName($benchmark,$recursive);
+		$header=$jquery->semantic()->htmlHeader("h-name",4);
+		if(\sizeof($name)>1){
+			$header->asTitle($name[0],"forked from <a href='#'>".$name[1]."</a>");
+			$jquery->getOnClick("#subheader-h-name a", "benchmarks/seeOne/".$benchmark->getIdFork(),"#main-container",["ajaxTransition"=>"random"]);
+		}
+		else
+			$header->setContent($name[0]);
+		return $header;
+	}
+
+	public static function getBenchmarkTop(JsUtils $jquery,Benchmark $benchmark,$user){
+		$result=$jquery->semantic()->htmlSegment("top-benchmark");
+		$result->addContent(GUI::getBenchmarkName($jquery, $benchmark));
+		$result->addContent(GUI::getToolbar($jquery, $user, $benchmark));
+		return $result;
+	}
+
+	public static function starButton(JsUtils $jquery,$benchmark){
+		if($benchmark instanceof Benchmark)
+			$id=$benchmark->getId();
+		else{
+			$id=$benchmark;
+		}
+		$stared=Models::stared($benchmark);
+		$bt=$jquery->semantic()->htmlButton("bt-star-".$id)->setProperty("title", "Star");
+		$bt->addIcon("star")->setColor(($stared)?"green":"");
+		$bt->addLabel(Models::countStar($benchmark))->setPointing("left")->getOnClick("Benchmarks/stars/".$id,"#main-container",["ajaxTransition"=>"random"]);
+		if(UserAuth::isAuth())
+			$bt->getOnClick("Main/".(($stared)?"unstar":"star")."/".$id,"#bt-star-".$id,["jqueryDone"=>"replaceWith"]);
+		return $bt;
+	}
+
+	public static function getToolbar(JsUtils $jquery,User $user,Benchmark $benchmark){
+		$toolbar=$jquery->semantic()->htmlButtonGroups("toolBar");
+		$idBenchmark=$benchmark->getId();
+
+		if(isset($user)){
+			if($user->getId()==$benchmark->getUser()->getId()){
+				$toolbar->addItem("Run test cases")->getOnClick("Benchmarks/run/".$idBenchmark,"#testTerminate")->addClass("teal")->addIcon("lightning");
+				$toolbar->addItem("Update")->getOnClick("Main/benchmark/".$idBenchmark,"#main-container",["ajaxTransition"=>"random"])->addIcon("edit");
+			}
+		}
+		$toolbar->addItem(GUI::forkButton($jquery, $benchmark));
+		$toolbar->addItem(GUI::starButton($jquery, $benchmark));
+		return $toolbar;
 	}
 }
