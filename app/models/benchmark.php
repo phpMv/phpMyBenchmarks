@@ -18,7 +18,7 @@ class Benchmark{
 
 	private $phpVersion;
 
-	private $iterations;
+	private $iterations=100000;
 
 	private $idFork;
 

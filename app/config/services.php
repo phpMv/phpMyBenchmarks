@@ -14,4 +14,4 @@ if($db["dbName"]!==""){
 	DAO::connect($db["dbName"],@$db["serverName"],@$db["port"],@$db["user"],@$db["password"],@$db["cache"]);
 }
 Router::start();
-Router::addRoute("_default", "controllers\Main");
+Router::addRoute("_default", "controllers\Nol");

@@ -9,6 +9,14 @@ use models\Execution;
 use models\Testcase;
 use models\User;
 use Ajax\Semantic;
+use Ajax\semantic\html\elements\HtmlButtonGroups;
+use Ajax\semantic\html\collections\HtmlMessage;
+use Ajax\semantic\html\elements\HtmlLabel;
+use Ajax\semantic\html\elements\HtmlList;
+use models\Result;
+use Ajax\semantic\html\base\HtmlSemDoubleElement;
+use micro\views\View;
+use controllers\ControllerBase;
 
 class GUI {
 
@@ -152,5 +160,132 @@ class GUI {
 		$toolbar->addItem(GUI::forkButton($jquery, $benchmark));
 		$toolbar->addItem(GUI::starButton($jquery, $benchmark));
 		return $toolbar;
+	}
+
+	public static function getJumboButtons($inJumbotron=true){
+		$buttons=new HtmlButtonGroups("user-buttons",["Create benchmark","All benchmarks"]);
+		$buttons->getElement(0)->setColor("green")->setProperty("data-ajax", "Main/benchmark")->addIcon("plus");
+		$buttons->getElement(1)->setProperty("data-ajax", "Benchmarks/all");
+
+		self::getButtons($buttons,$inJumbotron);
+		$buttons->getOnClick("","#main-container",["attr"=>"data-ajax"]);
+		return $buttons;
+	}
+
+	public static function getButtons(HtmlButtonGroups $buttons,$inJumbotron){
+		if(UserAuth::isAuth()){
+			$element=$buttons->addElement("My benchmarks");
+			$element->setProperty("data-ajax", "Benchmarks/my");
+		}elseif($inJumbotron){
+			$element=$buttons->addElement("Sign in");
+			$element->setProperty("data-ajax", "Auth/signin")->addIcon("sign in");
+
+			$element=$buttons->addElement("Sign up");
+			$element->setProperty("data-ajax", "Auth/signup")->addIcon("user add");
+		}
+	}
+
+	public static function displayBenchmarks(JsUtils $jquery,View $view,ControllerBase $controller,$benchMarks,$title,$jsonUrl,$total_rowcount,$count=10){
+		$deBenchs=self::createDataBenchmark($jquery,$benchMarks, $jsonUrl);
+
+		if(isset($_POST["p"])){
+			$deBenchs->paginate($_POST["p"], $total_rowcount,$count);
+			$deBenchs->refresh();
+			$s= $jquery->compile($view);
+			echo $deBenchs;
+			echo $s;
+		}else{
+			$deBenchs->paginate(1, $total_rowcount,$count);
+			$jquery->compile($view);
+			$controller->loadView("benchmarks/display.html",["title"=>$title]);
+		}
+	}
+
+	private static function createDataBenchmark(JsUtils $jquery,$benchMarks,$jsonUrl){
+		$deBenchs=$jquery->semantic()->dataTable("deBenchs", "models\Benchmark", $benchMarks);
+		$deBenchs->setIdentifierFunction("getId");
+
+		$bt=new HtmlButton("add-benchmark","Create benchmark","green");
+		$bt->getOnClick("Main/createBenchmark","#main-container")->addIcon("plus");
+		$msg=new HtmlMessage("empty-message",["no benchmark to display&nbsp;",$bt]);
+		$msg->setIcon("info circle");
+
+		$deBenchs->setEmptyMessage($msg);
+		$deBenchs->setCompact(true);
+		$deBenchs->setFields(['stars','name','tests','results','createdAt']);
+		$deBenchs->setCaptions(['Stars','Name','Tests','Latest results','Created at','Actions']);
+
+		$deBenchs->setValueFunction("stars", function($str,$bench) use($jquery){
+			return GUI::starButton($jquery, $bench);
+		});
+
+		$deBenchs->setValueFunction("tests", function($str,$bench){return new HtmlLabel("",\count($bench->getTestcases()));});
+
+		$deBenchs->setValueFunction("results",function($str,$bench){
+			$results=Models::getLastResults($bench,true);
+			$list=new HtmlList("");
+			$list->setHorizontal();
+			$count=\count($results);
+			$lblFast="";$lblSlow="";
+			if($count>0){
+				if($count>1){
+					$lblFast=(new HtmlLabel(""))->addClass("green empty circular")." ";
+					$lblSlow=(new HtmlLabel(""))->addClass("orange empty circular")." ";
+				}
+				self::addListResult($list, $results[0],$lblFast);
+				if($count<3){
+					for ($i=1;$i<$count-1;$i++){
+						self::addListResult($list, $results[$i]);
+					}
+				}else{
+					for ($i=1;$i<2;$i++){
+						self::addListResult($list, $results[$i]);
+					}
+					$list->addItem("...");
+				}
+				if($count>1){
+					self::addListResult($list, $results[$count-1],$lblSlow);
+				}
+			}
+			return $list;
+		});
+
+		$deBenchs->setValueFunction("name", function($name,$bench) use($jquery){
+			$elm=new HtmlSemDoubleElement("name-".$bench->getId(),"div");
+			$elm->setContent($name);
+			$elm->addPopupHtml(GUI::getBenchmarkName($jquery, $bench),NULL,["setFluidWidth"=>true,"on"=>"click"]);
+			return $elm;
+		});
+
+		$deBenchs->setValueFunction("createdAt", function($time){return Models::time_elapsed_string($time,false);});
+
+		$deBenchs->addEditDeleteButtons(true,["ajaxTransition"=>"random"],function($edit,$bench){
+			if(!isset($_SESSION["user"]) || $bench->getUser()->getId()!=$_SESSION["user"]->getId())
+				$edit->wrap("<!--","-->");
+		},
+		function($delete,$bench){
+			if(!isset($_SESSION["user"]) || $bench->getUser()->getId()!=$_SESSION["user"]->getId())
+				$delete->wrap("<!--","-->");
+		});
+		$deBenchs->insertInFieldButton(5, "",true,function($fork,$bench){
+			if(!isset($_SESSION["user"]) || $bench->getUser()->getId()!=$_SESSION["user"]->getId())
+				$fork->addClass("fork")->asIcon("fork");
+				else
+					$fork->wrap("<!--","-->");
+		});
+		$deBenchs->insertInFieldButton(5, "",true,function($see){
+			$see->addClass("see")->asIcon("unhide");
+		});
+
+		$deBenchs->setUrls(["refresh"=>$jsonUrl,"edit"=>"Main/benchmark","delete"=>"Benchmarks/delete"]);
+		$deBenchs->setTargetSelector(["edit"=>"#main-container","delete"=>"#info"]);
+
+		$jquery->getOnClick(".see", "Benchmarks/seeOne","#main-container",["attr"=>"data-ajax"]);
+		$jquery->getOnClick(".fork", "Main/fork","#main-container",["attr"=>"data-ajax"]);
+		return $deBenchs;
+	}
+
+	public static function addListResult(HtmlList $list,Result $result,$tag=""){
+		$list->addItem(["image"=>"public/img/".$result->getStatus().".png","header"=>$result->getTestcase()->getName(),"description"=>$tag.Models::getTime($result->getTimer())]);
 	}
 }

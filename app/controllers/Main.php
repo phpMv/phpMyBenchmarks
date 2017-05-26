@@ -21,20 +21,18 @@ class Main extends ControllerBase{
 
 
 	public function index(){
-		$header=$this->semantic->htmlHeader("header");
-		$header->asImage("public/img/benchmarks.png", "phpMyBenchmarks.net","Benchmark and improve your php code to get better performances");
-		$buttons=$this->semantic->htmlButtonGroups("buttons",["Create benchmark","All benchmarks"]);
-		$buttons->getElement(0)->setColor("green")->setProperty("data-ajax", "Main/benchmark")->addIcon("plus");
-		$buttons->getElement(1)->setProperty("data-ajax", "Benchmarks/all");
+	}
 
-		$this->getButtons($buttons);
-		$buttons->getOnClick("","#main-container",["attr"=>"data-ajax"]);
-		$myBenchs="";
-		if(UserAuth::isAuth()){
-			$myBenchs=$this->forward("controllers\Benchmarks","my",[],true,true,true);
-		}
-		$this->jquery->compile($this->view);
-		$this->loadView("main/index.html",["myBenchs"=>$myBenchs]);
+	public function jumbotron(){
+		$_SESSION["jumbotron"]=true;
+		echo GUI::getJumboButtons(false)->compile($this->jquery);
+		echo $this->jquery->compile($this->view);
+	}
+
+	public function notJumbotron(){
+		$_SESSION["jumbotron"]=false;
+		echo GUI::getJumboButtons(true)->compile($this->jquery);
+		echo $this->jquery->compile($this->view);
 	}
 
 	private function getButtons(HtmlButtonGroups $buttons){
@@ -50,15 +48,17 @@ class Main extends ControllerBase{
 		}
 	}
 
+	public function createBenchmark(){
+		return $this->benchmark();
+	}
+
 	public function benchmark($id=null){
 		if(isset($id)){
 			$benchmark=DAO::getOne("models\Benchmark", $id,true,true);
 		}else{
 			$benchmark=new Benchmark();
-			$benchmark->setBeforeAll("\$str='bonjour';");
-			Models::addTest($benchmark,NULL,'for($j=0;$j<strlen($str);$j++){
-	\substr($str, $j, 1);
-}');
+			$benchmark->setBeforeAll("//php preparation code executed before each test case");
+			Models::addTest($benchmark,NULL,'//php test case code');
 		}
 		$_SESSION["benchmark"]=$benchmark;
 		GUI::getBenchmarkName($this->jquery, $benchmark);
@@ -68,7 +68,7 @@ class Main extends ControllerBase{
 		$fields=$prepForm->addFields();
 		$input=$fields->addInput("iterations","Iterations count","number",$benchmark->getIterations(),"")->setWidth(6);
 		$input->getDataField()->setProperty("max", "1000000");
-		$fields->addDropdown("phpVersion",["5.6","7.0","7.1"],"php version","5.6");
+		$fields->addDropdown("phpVersion",["Default 5.6","7.0","7.1"],"php version","Default 5.6")->setDisabled();
 
 		$prepForm->addElement("preparation",$benchmark->getBeforeAll(),"Preparation","div","ui segment editor");
 		$forms="";
@@ -89,9 +89,7 @@ class Main extends ControllerBase{
 	}
 	public function addFormTestCase($testcase=null,$asString=false){
 		if(!($testcase instanceof Testcase)){
-			$testcase=Models::addTest($_SESSION["benchmark"],NULL,'for($j=0;$j<strlen($str);$j++){
-	\substr($str, $j, 1);
-}');
+			$testcase=Models::addTest($_SESSION["benchmark"],NULL,'');
 		}
 		$testcase->form=$testcase->getId();
 		$id="form".$testcase->getId();

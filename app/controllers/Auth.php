@@ -43,14 +43,14 @@ class Auth extends ControllerBase{
 					$header=$this->jquery->semantic()->htmlHeader("headerUser",3);
 					$header->asImage($user->getAvatar(), $user->getLogin(),"connected");
 					echo GUI::showSimpleMessage($this->jquery, $header, "info","");
-					$this->forward("controllers\Main","index",[],true,true);
+					$this->forward("controllers\Nol","index",[],true,true);
 					$this->jquery->get("Auth/infoUser","#divInfoUser","{}",null,false);
 					break;
 				}
 			}
 		}
 		if(!isset($_SESSION["user"])){
-			echo GUI::showSimpleMessage($this->jquery, "Failed to connect : bad login or password.", "error","error");
+			echo GUI::showSimpleMessage($this->jquery, "Failed to connect : bad login or password.", "error","warning circle");
 			$this->forward("controllers\Auth","signin",[],true,true);
 		}
 		echo $this->jquery->compile($this->view);
@@ -116,7 +116,7 @@ class Auth extends ControllerBase{
 		$bt2->compile($this->jquery,$this->view);
 
 		$bt3=HtmlButton::social("bt-linkedin", Social::LINKEDIN);
-		$bt3->asLink(RequestUtils::getUrl("Auth/signin_with_hybridauth/Linkedin"));
+		$bt3->asLink(RequestUtils::getUrl("Auth/signin_with_hybridauth/LinkedIn"));
 		$bt3->compile($this->jquery,$this->view);
 
 		$formCallback();
@@ -145,7 +145,7 @@ class Auth extends ControllerBase{
 		$adapter=$this->getAdapter($provider);
 		$user_profile=$adapter->getUserProfile();
 
-		$dbProvider=DAO::getOne("models\AuthProvider", array (
+		$dbProvider=DAO::getOne("models\Authprovider", array (
 				"name" => $provider
 		));
 		if ($dbProvider!=NULL) {
@@ -192,7 +192,7 @@ class Auth extends ControllerBase{
 		$message->setDismissable()->setTimeout(5000);
 		echo $message->compile($this->jquery);
 		$this->jquery->get("Auth/infoUser","#divInfoUser","{}",null,false);
-		$this->forward("controllers\Main","index",[],true,true);
+		$this->forward("controllers\Nol","index",[],true,true);
 		echo $this->jquery->compile();
 	}
 }
