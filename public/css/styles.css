@@ -22,7 +22,9 @@
 	margin: 0 0 1rem 0;
 	position: relative;
 }
-
+#main-container{
+	min-height: 395px;
+}
 #jumbotron{
 	background-color: #F6F4F4;
 	padding: 36px;
@@ -37,4 +39,34 @@
 
 .ui.popup{
 	min-width: max-content!important;
+}
+.site_map {
+	box-sizing: border-box;
+	height: 300px;
+	width:100%;
+	perspective-origin: 950.5px 267.15625px;
+	-webkit-perspective-origin: 950.5px 267.15625px;
+	-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+	transform-origin: 950.5px 267.15625px;
+	-webkit-transform-origin: 950.5px 267.15625px;
+	background: #1B1C1D none repeat scroll 0% 0% / auto padding-box border-box;
+	border: 0px none rgb(24, 23, 27);
+	outline: rgb(24, 23, 27) none 0px;
+	padding: 30px 0px 0px;
+	-webkit-border-after: 0px none rgb(24, 23, 27);
+	-webkit-border-before: 0px none rgb(24, 23, 27);
+	-webkit-border-end: 0px none rgb(24, 23, 27);
+	-webkit-border-start: 0px none rgb(24, 23, 27);
+	margin-top: 10px;
+}
+.copyright{
+	color: #e5e3de;
+	font-weight: 200;
+}
+.copyright a{
+	color: #9e9e9e;
+}
+.sitemap ul{
+	list-style-type: none;
+	padding: 0;
 }
