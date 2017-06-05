@@ -54,7 +54,11 @@ class Main extends ControllerBase{
 
 	public function benchmark($id=null){
 		if(isset($id)){
-			$benchmark=DAO::getOne("models\Benchmark", $id,true,true);
+			if(\is_int($id))
+				$benchmark=DAO::getOne("models\Benchmark", $id,true,true);
+			else{
+				$benchmark=$_SESSION["benchmark"];
+			}
 		}else{
 			$benchmark=new Benchmark();
 			$benchmark->setBeforeAll("//php preparation code executed before each test case");
@@ -75,12 +79,17 @@ class Main extends ControllerBase{
 		foreach ($benchmark->getTestcases() as $testcase){
 			$forms.=$this->addFormTestCase($testcase,true);
 		}
-		$bts=$this->semantic->htmlButtonGroups("btsTests",["Run test cases","Save"]);
+		$runCaption="Run test cases";
+
+		if(UserAuth::isAuth()){
+			$runCaption="Save and run test cases";
+		}
+		$bts=$this->semantic->htmlButtonGroups("btsTests",[$runCaption,"Close"]);
 		$bts->addClass("fluid");
 		$bts->getElement(0)->onClick("var form=getNextForm('form.toSubmit');if(form!=false) form.form('submit');")->addClass("teal")->addIcon("lightning");
 		$btAdd=$this->semantic->htmlButton("addTest","Add test case");
 		$btAdd->addIcon("plus");
-		$btAdd->getOnClick("main/addFormTestCase","#forms",["jqueryDone"=>"append"]);
+		$btAdd->getOnClick("Main/addFormTestCase","#forms",["jqueryDone"=>"append"]);
 		$this->jquery->exec("setAceEditor('preparation');",true);
 		$this->jquery->exec("google.charts.load('current', {'packages':['corechart']});",true);
 		$this->jquery->exec("$('.ui.accordion').accordion({'exclusive': false});",true);

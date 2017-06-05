@@ -22,9 +22,7 @@
 	margin: 0 0 1rem 0;
 	position: relative;
 }
-#main-container{
-	min-height: 395px;
-}
+
 #jumbotron{
 	background-color: #F6F4F4;
 	padding: 36px;
@@ -40,7 +38,11 @@
 .ui.popup{
 	min-width: max-content!important;
 }
-.site_map {
+.allButFooter {
+    min-height: calc(100vh - 387px);
+}
+footer {
+	right: 0;
 	box-sizing: border-box;
 	height: 300px;
 	width:100%;

@@ -23,6 +23,11 @@ class Benchmark{
 	private $idFork;
 
 	/**
+	 * @transient
+	 */
+	private $toDelete=[];
+
+	/**
 	 * @manyToMany("targetEntity"=>"models\User","inversedBy"=>"benchstars")
 	 * @joinTable("name"=>"benchstar")
 	 */
@@ -157,8 +162,10 @@ class Benchmark{
 
 	public function removeTestByCallback($callback){
 		$toDelete=$this->getTestIndexByCallback($callback);
-		if(isset($toDelete))
+		if(isset($toDelete)){
+			$this->toDelete[]=$this->testcases[$toDelete];
 			array_splice($this->testcases, $toDelete, 1);
+		}
 	}
 
 	public function nextTestCaseId(){
@@ -242,5 +249,8 @@ class Benchmark{
 		return $this;
 	}
 
+	public function getToDelete() {
+		return $this->toDelete;
+	}
 
 }

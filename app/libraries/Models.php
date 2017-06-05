@@ -151,7 +151,7 @@ class Models {
 		return DAO::$db->count('benchstar',$where)==1;
 	}
 
-	public static function save($benchmark){
+	public static function save(Benchmark $benchmark){
 		$user=UserAuth::getUser();
 		$benchmark->setUser($user);
 		if($benchmark->getCreatedAt()!=NULL){
@@ -169,6 +169,9 @@ class Models {
 				DAO::insert($test);
 				$test->setCreatedAt(\date("Y-m-d H:i:s"));
 			}
+		}
+		foreach ($benchmark->getToDelete() as $testToDelete){
+			DAO::remove($testToDelete);
 		}
 		foreach ($benchmark->getExecutions() as $execution){
 			if($execution->getCreatedAt()!=NULL)

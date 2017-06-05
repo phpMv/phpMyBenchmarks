@@ -125,8 +125,8 @@ class GUI {
 		return $header;
 	}
 
-	public static function getBenchmarkTop(JsUtils $jquery,Benchmark $benchmark,$user){
-		$result=$jquery->semantic()->htmlSegment("top-benchmark");
+	public static function getBenchmarkTop(JsUtils $jquery,Benchmark $benchmark,$user,$id="top-benchmark"){
+		$result=$jquery->semantic()->htmlSegment($id);
 		$result->addContent(GUI::getBenchmarkName($jquery, $benchmark));
 		$result->addContent(GUI::getToolbar($jquery, $user, $benchmark));
 		return $result;
@@ -147,7 +147,7 @@ class GUI {
 		return $bt;
 	}
 
-	public static function getToolbar(JsUtils $jquery,User $user,Benchmark $benchmark){
+	public static function getToolbar(JsUtils $jquery,$user,Benchmark $benchmark){
 		$toolbar=$jquery->semantic()->htmlButtonGroups("toolBar");
 		$idBenchmark=$benchmark->getId();
 
@@ -156,8 +156,8 @@ class GUI {
 				$toolbar->addItem("Run test cases")->getOnClick("Benchmarks/run/".$idBenchmark,"#testTerminate")->addClass("teal")->addIcon("lightning");
 				$toolbar->addItem("Update")->getOnClick("Main/benchmark/".$idBenchmark,"#main-container",["ajaxTransition"=>"random"])->addIcon("edit");
 			}
+			$toolbar->addItem(GUI::forkButton($jquery, $benchmark));
 		}
-		$toolbar->addItem(GUI::forkButton($jquery, $benchmark));
 		$toolbar->addItem(GUI::starButton($jquery, $benchmark));
 		return $toolbar;
 	}
@@ -268,7 +268,7 @@ class GUI {
 				$delete->wrap("<!--","-->");
 		});
 		$deBenchs->insertInFieldButton(5, "",true,function($fork,$bench){
-			if(!isset($_SESSION["user"]) || $bench->getUser()->getId()!=$_SESSION["user"]->getId())
+			if(isset($_SESSION["user"]) && $bench->getUser()->getId()!=$_SESSION["user"]->getId())
 				$fork->addClass("fork")->asIcon("fork");
 				else
 					$fork->wrap("<!--","-->");
