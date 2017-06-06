@@ -184,12 +184,21 @@ class Main extends ControllerBase{
 		$benchmark=$_SESSION["benchmark"];
 		$execution=$_SESSION["execution"];
 		$this->jquery->exec("drawChart('".$_SESSION["uid"]."',".Models::getResults($execution).",'graph');",true);
-		echo $this->jquery->compile();
 
+		$message=$this->semantic->htmlMessage("msg-terminate");
+		$message->setDismissable();
 		unset($_SESSION["uid"]);
 		if(UserAuth::isAuth()){
 			Models::save($benchmark);
+			$message->setIcon("info circle");
+			$message->addContent("Benchmark ".\implode("", Models::getBenchmarkName($benchmark))." saved.");
+		}else{
+			$message->setContent("You need to be logged in to save this benchmark");
+			$message->setIcon("warning circle");
+			$message->addClass("warning");
 		}
+		echo $message;
+		echo $this->jquery->compile($this->view);
 	}
 
 	private function replaceAll($array,$subject){
