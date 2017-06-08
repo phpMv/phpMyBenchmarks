@@ -14,6 +14,8 @@ use libraries\ServerExchange;
 use models\Execution;
 use Ajax\semantic\html\elements\html5\HtmlLink;
 use Ajax\semantic\html\collections\HtmlMessage;
+use models\Domain;
+use Ajax\semantic\html\content\HtmlListItem;
 
  /**
  * Controller Benchmarks
@@ -33,12 +35,78 @@ class Benchmarks extends ControllerBase{
 
 	public function all(){
 		$benchmarks=DAO::getAll("models\Benchmark","1=1 ORDER BY createdAt DESC".$this->getLimitOffset(),true,true);
-		GUI::displayBenchmarks($this->jquery,$this->view,$this,$benchmarks,"All benchmarks","Benchmarks/all",DAO::count("models\Benchmark"));
+		GUI::displayBenchmarks($this->jquery,$this->view,$this,$benchmarks,null,"Benchmarks/all",DAO::count("models\Benchmark"));
+	}
+
+	public function allTab(){
+		$tab=$this->semantic->htmlTab("allTabs");
+		$tab->forwardTab(0, $this->jquery, "All benchmarks", $this, "controllers\Benchmarks", "all");
+		$tab->forwardTab(1, $this->jquery, "By category", $this, "controllers\Benchmarks", "domains");
+		$this->jquery->compile($this->view);
+		$this->loadView("benchmarks/allTabs.html");
+	}
+
+	public function myTab(){
+		$tab=$this->semantic->htmlTab("allTabs");
+		$tab->forwardTab(0, $this->jquery, "My benchmarks", $this, "controllers\Benchmarks", "my");
+		$tab->forwardTab(1, $this->jquery, "By category", $this, "controllers\Benchmarks", "domains",["my"]);
+		$this->jquery->compile($this->view);
+		$this->loadView("benchmarks/allTabs.html");
+	}
+
+	public function domains($my=""){
+		$useMy=$my=="my" && UserAuth::isAuth();
+		$sqlMy="";
+		$user=null;
+		if($useMy){
+			$user=UserAuth::getUser();
+			$sqlMy=" AND idUser=".$user->getId();
+		}
+		$domains=DAO::getAll("models\Domain");
+		$list=$this->semantic->htmlList("listDomains");
+		$list->fromDatabaseObjects($domains, function($domain) use($sqlMy,$my){
+			$count=DAO::count("models\Benchmark","INSTR(`domains`, '".$domain->getId()."') > 0".$sqlMy);
+
+			$item=new HtmlListItem("domain-".$domain->getId());
+			$item->setIcon("line chart");
+			$desc="no benchmark";
+			if($count>0){
+				$last=Models::getLastBenchmark($domain->getId(),$sqlMy);
+				$results=Models::getLastResults($last,true);
+				$desc="<b>".$last->getName()."</b>&nbsp;".GUI::getResults($results);
+			}
+			$item->setTitle($domain->getName()." (".$count.")",$desc,"header");
+			$item->getOnClick("Benchmarks/benchmarksCat/".$domain->getId()."/".$my,"#tabBenchmarks",["jsCallback"=>"$('#listDomains').hide();$('#tabBenchmarks').show();"]);
+		return $item;
+		});
+		$list->addClass("selection relaxed");
+		echo $list;
+		echo '<div id="tabBenchmarks" style="display: none;"></div>';
+		echo $this->jquery->compile($this->view);
+	}
+
+	public function benchmarksCat($idDomain,$my=""){
+		$domaine=DAO::getOne("models\Domain", $idDomain);
+		$bt=$this->semantic->htmlButton("return","Close");
+		$bt->addIcon("close");
+		$title=$domaine->getName();
+		$useMy=$my=="my" && UserAuth::isAuth();
+		$where="INSTR(`domains`, '".$idDomain."') > 0";
+		$user=null;
+		if($useMy){
+			$user=UserAuth::getUser();
+			$where.=" AND idUser=".$user->getId();
+			$title="My benchmarks : ".$title;
+		}
+		$bt->addLabel($title,false);
+		$bt->onClick("$('#tabBenchmarks').hide();$('#listDomains').show();");
+		$benchmarks=DAO::getAll("models\Benchmark",$where." ORDER BY createdAt DESC".$this->getLimitOffset(),true,true);
+		GUI::displayBenchmarks($this->jquery,$this->view,$this,$benchmarks,$bt,"Benchmarks/benchmarksCat/".$idDomain."/".$my,DAO::count("models\Benchmark",$where));
 	}
 
 	public function my(){
 		$benchmarks=DAO::getAll("models\Benchmark","idUser=".UserAuth::getUser()->getId()." ORDER BY createdAt DESC".$this->getLimitOffset(),true,true);
-		GUI::displayBenchmarks($this->jquery,$this->view,$this,$benchmarks,"My benchmarks","Benchmarks/my",DAO::count("models\Benchmark","idUser=".UserAuth::getUser()->getId()));
+		GUI::displayBenchmarks($this->jquery,$this->view,$this,$benchmarks,null,"Benchmarks/my",DAO::count("models\Benchmark","idUser=".UserAuth::getUser()->getId()));
 	}
 
 	private function getLimitOffset($count=10){

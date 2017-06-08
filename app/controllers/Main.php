@@ -38,7 +38,7 @@ class Main extends ControllerBase{
 	private function getButtons(HtmlButtonGroups $buttons){
 		if(UserAuth::isAuth()){
 			$element=$buttons->addElement("My benchmarks");
-			$element->setProperty("data-ajax", "Benchmarks/my");
+			$element->setProperty("data-ajax", "Benchmarks/myTab");
 		}else{
 			$element=$buttons->addElement("Sign in");
 			$element->setProperty("data-ajax", "Auth/signin")->addIcon("sign in");

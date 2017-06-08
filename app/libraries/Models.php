@@ -101,6 +101,10 @@ class Models {
 		return [];
 	}
 
+	public static function getLastBenchmark($idDomain,$sqlMy=""){
+		return DAO::getOne("models\Benchmark", "INSTR(`domains`, '".$idDomain."')>0".$sqlMy." ORDER BY createdAt DESC LIMIT 1 OFFSET 0",true,true);
+	}
+
 	public static function getTestIds(Benchmark $benchmark){
 		$result=[];
 		foreach ($benchmark->getTestcases() as $test){

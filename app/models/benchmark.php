@@ -22,6 +22,10 @@ class Benchmark{
 
 	private $idFork;
 
+	private $analysis;
+
+	private $domains;
+
 	/**
 	 * @transient
 	 */
@@ -252,5 +256,24 @@ class Benchmark{
 	public function getToDelete() {
 		return $this->toDelete;
 	}
+
+	public function getAnalysis() {
+		return $this->analysis;
+	}
+
+	public function setAnalysis($analysis) {
+		$this->analysis=$analysis;
+		return $this;
+	}
+
+	public function getDomains() {
+		return $this->domains;
+	}
+
+	public function setDomains($domains) {
+		$this->domains=$domains;
+		return $this;
+	}
+
 
 }

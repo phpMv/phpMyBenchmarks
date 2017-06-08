@@ -38,8 +38,8 @@ class UserAuth {
 			$dd->addHeaderItem("Signed in as <b>".$user->getLogin()."</b>");
 			$dd->addDividerItem();
 			$dd->addItem("Create benchmark")->setProperty("data-ajax", "Main/benchmark");
-			$dd->addItem("My benchmarks")->setProperty("data-ajax", "Benchmarks/my");
-			$dd->addItem("All benchmarks")->setProperty("data-ajax", "Benchmarks/all");
+			$dd->addItem("My benchmarks")->setProperty("data-ajax", "Benchmarks/myTab");
+			$dd->addItem("All benchmarks")->setProperty("data-ajax", "Benchmarks/allTab");
 			$dd->addDividerItem();
 			$dd->addItem("Sign out")->setProperty("data-ajax", "Auth/disconnect");
 			$dd->getOnClick("","#main-container",["attr"=>"data-ajax","ajaxTransition"=>"random"]);

@@ -7,8 +7,6 @@ use Ajax\semantic\html\elements\HtmlHeader;
 use libraries\UserAuth;
 use models\Benchmark;
 use libraries\Models;
-use Ajax\semantic\html\elements\HtmlLabel;
-use Ajax\semantic\html\elements\HtmlButtonGroups;
 use Ajax\semantic\html\elements\HtmlButton;
 use Ajax\semantic\html\collections\HtmlMessage;
 
@@ -36,7 +34,7 @@ class Nol extends ControllerBase{
 		}
 		$myBenchs="";
 		if(UserAuth::isAuth()){
-			$myBenchs=$this->forward("controllers\Benchmarks","my",[],true,true,true);
+			$myBenchs=$this->forward("controllers\Benchmarks","myTab",[],true,true,true);
 		}
 		if(isset($_SESSION["benchmark"])){
 			if(UserAuth::isAuth() || $_SESSION["benchmark"]->getId()==null)
@@ -47,7 +45,7 @@ class Nol extends ControllerBase{
 	}
 	public function all(){
 		$benchmarks=DAO::getAll("models\Benchmark","1=1 ORDER BY createdAt DESC".$this->getLimitOffset(),true,true);
-		GUI::displayBenchmarks($this->jquery,$this->view,$this,$benchmarks,"All benchmarks","Benchmarks/all",DAO::count("models\Benchmark"));
+		GUI::displayBenchmarks($this->jquery,$this->view,$this,$benchmarks,"All benchmarks","Benchmarks/allTab",DAO::count("models\Benchmark"));
 	}
 
 	private function getTmpBenchmark(Benchmark $benchmark){

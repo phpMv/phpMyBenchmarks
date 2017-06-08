@@ -165,7 +165,7 @@ class GUI {
 	public static function getJumboButtons($inJumbotron=true){
 		$buttons=new HtmlButtonGroups("user-buttons",["Create benchmark","All benchmarks"]);
 		$buttons->getElement(0)->setColor("green")->setProperty("data-ajax", "Main/benchmark")->addIcon("plus");
-		$buttons->getElement(1)->setProperty("data-ajax", "Benchmarks/all");
+		$buttons->getElement(1)->setProperty("data-ajax", "Benchmarks/allTab");
 
 		self::getButtons($buttons,$inJumbotron);
 		$buttons->getOnClick("","#main-container",["attr"=>"data-ajax"]);
@@ -175,7 +175,7 @@ class GUI {
 	public static function getButtons(HtmlButtonGroups $buttons,$inJumbotron){
 		if(UserAuth::isAuth()){
 			$element=$buttons->addElement("My benchmarks");
-			$element->setProperty("data-ajax", "Benchmarks/my");
+			$element->setProperty("data-ajax", "Benchmarks/myTab");
 		}elseif($inJumbotron){
 			$element=$buttons->addElement("Sign in");
 			$element->setProperty("data-ajax", "Auth/signin")->addIcon("sign in");
@@ -223,31 +223,7 @@ class GUI {
 
 		$deBenchs->setValueFunction("results",function($str,$bench){
 			$results=Models::getLastResults($bench,true);
-			$list=new HtmlList("");
-			$list->setHorizontal();
-			$count=\count($results);
-			$lblFast="";$lblSlow="";
-			if($count>0){
-				if($count>1){
-					$lblFast=(new HtmlLabel(""))->addClass("green empty circular")." ";
-					$lblSlow=(new HtmlLabel(""))->addClass("orange empty circular")." ";
-				}
-				self::addListResult($list, $results[0],$lblFast);
-				if($count<3){
-					for ($i=1;$i<$count-1;$i++){
-						self::addListResult($list, $results[$i]);
-					}
-				}else{
-					for ($i=1;$i<2;$i++){
-						self::addListResult($list, $results[$i]);
-					}
-					$list->addItem("...");
-				}
-				if($count>1){
-					self::addListResult($list, $results[$count-1],$lblSlow);
-				}
-			}
-			return $list;
+			return self::getListResults($results);
 		});
 
 		$deBenchs->setValueFunction("name", function($name,$bench) use($jquery){
@@ -285,7 +261,59 @@ class GUI {
 		return $deBenchs;
 	}
 
-	public static function addListResult(HtmlList $list,Result $result,$tag=""){
-		$list->addItem(["image"=>"public/img/".$result->getStatus().".png","header"=>$result->getTestcase()->getName(),"description"=>$tag.Models::getTime($result->getTimer())]);
+	public static function getListResults($results,$hasImages=true){
+		$list=new HtmlList("");
+		$list->setHorizontal();
+		$count=\count($results);
+		$lblFast="";$lblSlow="";
+		if($count>0){
+			if($count>1){
+				$lblFast=(new HtmlLabel(""))->addClass("green empty circular")." ";
+				$lblSlow=(new HtmlLabel(""))->addClass("orange empty circular")." ";
+			}
+			self::addListResult($list, $results[0],$lblFast,$hasImages);
+			if($count<3){
+				for ($i=1;$i<$count-1;$i++){
+					self::addListResult($list, $results[$i],"",$hasImages);
+				}
+			}else{
+				for ($i=1;$i<2;$i++){
+					self::addListResult($list, $results[$i],"",$hasImages);
+				}
+				$list->addItem("...");
+			}
+			if($count>1){
+				self::addListResult($list, $results[$count-1],$lblSlow,$hasImages);
+			}
+		}
+		return $list;
+	}
+
+	public static function getResults($results){
+		$count=\count($results);
+		$result=[];
+		$lblFast="";$lblSlow="";
+		if($count>0){
+			if($count>1){
+				$lblFast=(new HtmlLabel(""))->addClass("green empty circular")." ";
+				$lblSlow=(new HtmlLabel(""))->addClass("orange empty circular")." ";
+			}
+			$result[]=self::addResult($results[0],$lblFast);
+			if($count>1){
+				$result[]=self::addResult($results[$count-1],$lblSlow);
+			}
+		}
+		return \implode("&nbsp;", $result);
+	}
+
+	private static function addResult(Result $result,$tag=""){
+		return $tag.$result->getTestcase()->getName()."->".Models::getTime($result->getTimer());
+	}
+
+	public static function addListResult(HtmlList $list,Result $result,$tag="",$hasImage=true){
+		if($hasImage)
+			$list->addItem(["image"=>"public/img/".$result->getStatus().".png","header"=>$result->getTestcase()->getName(),"description"=>$tag.Models::getTime($result->getTimer())]);
+		else
+			$list->addItem(["header"=>$result->getTestcase()->getName(),"description"=>$tag.Models::getTime($result->getTimer())]);
 	}
 }

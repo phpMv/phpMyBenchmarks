@@ -239,7 +239,7 @@ class DAO {
 	 */
 	public static function getOne($className, $keyValues, $loadManyToOne=true, $loadOneToMany=false, $useCache=NULL) {
 		if (!is_array($keyValues)) {
-			if (strrpos($keyValues, "=") === false) {
+			if (\is_numeric($keyValues)) {
 				$keyValues="`" . OrmUtils::getFirstKey($className) . "`='" . $keyValues . "'";
 			} elseif ($keyValues == "")
 				$keyValues="";
