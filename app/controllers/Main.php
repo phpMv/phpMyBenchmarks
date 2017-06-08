@@ -54,7 +54,7 @@ class Main extends ControllerBase{
 
 	public function benchmark($id=null){
 		if(isset($id)){
-			if(\is_int($id))
+			if($id!=="session")
 				$benchmark=DAO::getOne("models\Benchmark", $id,true,true);
 			else{
 				$benchmark=$_SESSION["benchmark"];
@@ -140,7 +140,7 @@ class Main extends ControllerBase{
 		$btDelete=$this->semantic->htmlButton("delete-".$formId,"Delete test case","fluid");
 		$btDelete->setProperty("data-ajax", $id);
 		$btDelete->addIcon("remove circle",true,true);
-		$btDelete->getOnClick('main/removeTest',"#info",["attr"=>"data-ajax"]);
+		$btDelete->getOnClick('Main/removeTest',"#info",["attr"=>"data-ajax"]);
 	}
 
 	public function send($id){
