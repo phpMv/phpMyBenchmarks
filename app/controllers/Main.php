@@ -11,6 +11,7 @@ use libraries\Models;
 use libraries\UserAuth;
 use Ajax\semantic\html\elements\HtmlButtonGroups;
 use libraries\GUI;
+use Ajax\service\JArray;
 
  /**
  * Controller Main
@@ -73,6 +74,7 @@ class Main extends ControllerBase{
 		$input=$fields->addInput("iterations","Iterations count","number",$benchmark->getIterations(),"")->setWidth(6);
 		$input->getDataField()->setProperty("max", "1000000");
 		$fields->addDropdown("phpVersion",["Default 5.6","7.0","7.1"],"php version","Default 5.6")->setDisabled();
+		$fields->addDropdown("domains",JArray::modelArray(DAO::getAll("models\Domain"),"getId","getName"),"Domains",$benchmark->getDomains(),true);
 
 		$prepForm->addElement("preparation",$benchmark->getBeforeAll(),"Preparation","div","ui segment editor");
 		$forms="";
@@ -135,7 +137,7 @@ class Main extends ControllerBase{
 		$form->addClass("test toSubmit");
 		$form->setFields(["name","code"]);
 		$this->jquery->exec("setAceEditor('".$formId."-code-0');",true);
-		$form->setSubmitParams("Main/send/".$id,"#response-".$formId,["params"=>"{'bench-name':$('#bench-name').val(),'bench-description':$('#bench-description').val(),'preparation':ace.edit('preparation').getValue(),'code':ace.edit('".$formId."-code-0').getValue(),'iterations':$('#iterations').val()}"]);
+		$form->setSubmitParams("Main/send/".$id,"#response-".$formId,["params"=>"{'domains':$('#domains').val(),'bench-name':$('#bench-name').val(),'bench-description':$('#bench-description').val(),'preparation':ace.edit('preparation').getValue(),'code':ace.edit('".$formId."-code-0').getValue(),'iterations':$('#iterations').val()}"]);
 		$form->fieldAsElement("code","div","ui segment editor");
 		$btDelete=$this->semantic->htmlButton("delete-".$formId,"Delete test case","fluid");
 		$btDelete->setProperty("data-ajax", $id);
@@ -152,11 +154,13 @@ class Main extends ControllerBase{
 		$preparation=$_POST["preparation"];
 		$iterations=min($_POST["iterations"],1000000);
 		$name=$_POST["name"];
+		$domains=$_POST["domains"];
 		$benchmark=$_SESSION["benchmark"];
 		$benchmark->setBeforeAll($preparation);
 		$benchmark->setName($_POST["bench-name"]);
 		$benchmark->setDescription($_POST["bench-description"]);
 		$benchmark->setIterations($iterations);
+		$benchmark->setDomains($domains);
 
 		$test=$benchmark->getTestByCallback(function($test) use ($id){return $test->form==$id;});
 		$test->setCode($command);

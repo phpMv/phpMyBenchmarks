@@ -166,10 +166,13 @@ class Benchmarks extends ControllerBase{
 	}
 
 	public function listExecs($benchmark){
+		$user=UserAuth::getUser();
 		$executions=DAO::getAll("models\Execution", "idBenchmark=".$benchmark->getId()." ORDER BY createdAt DESC");
 		$listExecs=$this->semantic->dataTable("list-executions", "models\Execution", $executions);
 		$listExecs->setIdentifierFunction("getId");
 		$listExecs->setFields(["uid","createdAt","results"]);
+		$listExecs->setCaptions(["uid","When created","Results","Actions"]);
+		$listExecs->setIdentifierFunction("getId");
 		$listExecs->setValueFunction("createdAt", function($str){ return Models::time_elapsed_string($str);});
 		$listExecs->setValueFunction("uid", function($str){ return \substr($str,0,7);});
 
@@ -195,8 +198,23 @@ class Benchmarks extends ControllerBase{
 			return $list;
 		});
 		$listExecs->setActiveRowSelector("error");
+		if($user!=null && $user->getId()==$benchmark->getUser()->getId()){
+			$listExecs->addDeleteButton(true);
+			$listExecs->setUrls(["delete"=>"Benchmarks/deleteResult"]);
+			$listExecs->setTargetSelector(["delete"=>"#info"]);
+		}
 		$listExecs->getOnRow("click", "Benchmarks/seeExecutionResults","#ajax",["attr"=>"data-ajax"]);
 		return $listExecs;
+	}
+
+	public function deleteResult($id){
+		$execution=DAO::getOne("models\Execution", $id);
+		if($execution!=null){
+			DAO::remove($execution);
+			echo GUI::showSimpleMessage($this->jquery, "Result deleted", "info","info circle",5000);
+			$this->jquery->exec("$('tr[data-ajax={$id}]').remove();",true);
+		}
+		echo $this->jquery->compile($this->view);
 	}
 
 	public function seeExecutionResults($idExecution){

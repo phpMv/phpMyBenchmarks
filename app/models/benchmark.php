@@ -22,9 +22,15 @@ class Benchmark{
 
 	private $idFork;
 
-	private $analysis;
+	/**
+	 * @column("name"=>"analysis","nullable"=>true)
+	 */
+	private $analysis=null;
 
-	private $domains;
+	/**
+	 * @column("name"=>"domains","nullable"=>true)
+	 */
+	private $domains="";
 
 	/**
 	 * @transient
