@@ -1,2 +1,4 @@
 # phpMyBenchmarks
-phpMyBenchmarks web site http://phpmybenchmarks.kobject.net
+Online tool for benchmarking your php scripts
+
+web site https://phpmybenchmarks.kobject.net
