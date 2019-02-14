@@ -5,12 +5,16 @@ namespace libraries;
 use models\Benchmark;
 use models\Testcase;
 use models\Result;
-use micro\orm\DAO;
+use Ubiquity\orm\DAO;
 use models\Execution;
 use models\User;
-use micro\utils\JArray;
+use Ubiquity\utils\base\UArray;
 
 class Models {
+	public static $PHP_VERSIONS=["5.4.45"=>"5.4","5.6.33"=>"5.6","7.3.1"=>"Default 7.3","7.0.33"=>"7.0","7.1.8"=>"7.1","7.2.2"=>"7.2"];
+	public static $DEFAULT_PHP_VERSION="7.3.1";
+	public static $NOTES=['152D39','5CB8CD','328C9B','FB8A52','DD7547','BB0D48','9E1248'];
+
 	const TIME_UNITS=[" "=>1,"m"=>0.001,"µ"=>0.000001,"n"=>0.000000001];
 	/**
 	 * Adds a new testcase in $benchmark and returns the count of tests
@@ -19,10 +23,12 @@ class Models {
 	 * @param string $code
 	 * @return Testcase
 	 */
-	public static function addTest(Benchmark $benchmark,$name=NULL,$code=""){
+	public static function addTest(Benchmark $benchmark,$name=NULL,$code="",$phpVersion=null){
 		$test=new Testcase();
 		$id=$benchmark->nextTestCaseId();
 		$test->setId($id);
+		if(isset($phpVersion))
+			$test->setPhpVersion($phpVersion);
 		$benchmark->addTestcase($test);
 		if(!isset($name)){
 			$name="test #".$id;
@@ -185,7 +191,12 @@ class Models {
 				DAO::insert($execution);
 				$execution->setCreatedAt(\date("Y-m-d H:i:s"));
 			}
-			foreach ($execution->getResults() as $result){
+			$results=$execution->getResults();
+			self::sortResults($results);
+			$index=1;
+			foreach ($results as $result){
+				$result->setPhpVersion(self::getTestPhpVersion($benchmark, $result->getTestcase()));
+				$result->setNote($index++);
 				if($result->getCreatedAt()!=NULL)
 					DAO::update($result);
 				else{
@@ -195,6 +206,32 @@ class Models {
 				}
 			}
 		}
+	}
+
+	public static function sortResults(&$results){
+		return \usort($results,function ($result1, $result2) {
+			$n1=$result1->getTimer();
+			$n2=$result2->getTimer();
+			if ($n1 == $n2) {
+				return 0;
+			}
+			return ($n1 < $n2) ? -1 : 1;
+		});
+	}
+
+	public static function getPhpVersion($phpVersion){
+		if(isset($phpVersion) && isset(self::$PHP_VERSIONS[$phpVersion])){
+			return $phpVersion;
+		}
+		return null;
+	}
+
+	public static function getTestPhpVersion(Benchmark $benchmark,Testcase $test){
+		$phpVersion=$test->getPhpVersion();
+		if(!isset(self::$PHP_VERSIONS[$phpVersion])){
+			$phpVersion=$benchmark->getPhpVersion();
+		}
+		return self::getPhpVersion($phpVersion);
 	}
 
 	public static function getTime($time){
@@ -254,6 +291,6 @@ class Models {
 
 	public static function getJsonBenchmarks($page,$condition="1=1",$count=15){
 		$benchmarks=DAO::getAll("models\Benchmark",$condition." limit ".(($page-1)*$count).",".$count);
-		print_r(JArray::toArray($benchmarks));
+		print_r(UArray::toArray($benchmarks));
 	}
 }

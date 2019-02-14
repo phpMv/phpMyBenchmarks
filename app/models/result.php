@@ -3,24 +3,49 @@ namespace models;
 class Result{
 	/**
 	 * @id
+	 * @column("name"=>"id","nullable"=>"","dbType"=>"int(11)")
 	 */
 	private $id;
 
+	/**
+	 * @column("name"=>"uid","nullable"=>"","dbType"=>"varchar(36)")
+	 */
+	private $uid;
+
+	/**
+	 * @column("name"=>"createdAt","nullable"=>"","dbType"=>"timestamp")
+	 */
 	private $createdAt;
 
+	/**
+	 * @column("name"=>"status","nullable"=>"","dbType"=>"varchar(20)")
+	 */
 	private $status;
 
+	/**
+	 * @column("name"=>"timer","nullable"=>"","dbType"=>"double")
+	 */
 	private $timer;
 
 	/**
+	 * @column("name"=>"phpVersion","nullable"=>1,"dbType"=>"varchar(10)")
+	 */
+	private $phpVersion;
+
+	/**
+	 * @column("name"=>"note","nullable"=>"","dbType"=>"int(11)")
+	 */
+	private $note;
+
+	/**
 	 * @manyToOne
-	 * @joinColumn("className"=>"models\Execution","name"=>"idExecution","nullable"=>false)
+	 * @joinColumn("className"=>"models\\Execution","name"=>"idExecution","nullable"=>"")
 	 */
 	private $execution;
 
 	/**
 	 * @manyToOne
-	 * @joinColumn("className"=>"models\Testcase","name"=>"idTestcase","nullable"=>false)
+	 * @joinColumn("className"=>"models\\Testcase","name"=>"idTestcase","nullable"=>"")
 	 */
 	private $testcase;
 
@@ -70,6 +95,24 @@ class Result{
 
 	public function setTestcase($testcase){
 		$this->testcase=$testcase;
+	}
+
+	public function getPhpVersion() {
+		return $this->phpVersion;
+	}
+
+	public function setPhpVersion($phpVersion) {
+		$this->phpVersion=$phpVersion;
+		return $this;
+	}
+
+	public function getNote() {
+		return $this->note;
+	}
+
+	public function setNote($note) {
+		$this->note=$note;
+		return $this;
 	}
 
 }

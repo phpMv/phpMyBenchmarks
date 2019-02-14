@@ -3,25 +3,38 @@ namespace models;
 class Testcase{
 	/**
 	 * @id
+	 * @column("name"=>"id","nullable"=>"","dbType"=>"int(11)")
 	 */
 	private $id;
 
+	/**
+	 * @column("name"=>"name","nullable"=>"","dbType"=>"varchar(100)")
+	 */
 	private $name;
 
+	/**
+	 * @column("name"=>"code","nullable"=>"","dbType"=>"text")
+	 */
 	private $code;
 
+	/**
+	 * @column("name"=>"createdAt","nullable"=>"","dbType"=>"timestamp")
+	 */
 	private $createdAt;
 
-	private $phpVersion;
+	/**
+	 * @column("name"=>"phpVersion","nullable"=>1,"dbType"=>"varchar(10)")
+	 */
+	private $phpVersion="";
 
 	/**
 	 * @manyToOne
-	 * @joinColumn("className"=>"models\Benchmark","name"=>"idBenchmark","nullable"=>false)
+	 * @joinColumn("className"=>"models\\Benchmark","name"=>"idBenchmark","nullable"=>"")
 	 */
 	private $benchmark;
 
 	/**
-	 * @oneToMany("mappedBy"=>"testcase","className"=>"models\Result")
+	 * @oneToMany("mappedBy"=>"testcase","className"=>"models\\Result")
 	 */
 	private $results;
 

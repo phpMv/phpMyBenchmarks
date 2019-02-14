@@ -1,14 +1,14 @@
 <?php
 namespace controllers;
- use micro\orm\DAO;
 use libraries\GUI;
-use micro\utils\RequestUtils;
 use Ajax\semantic\html\elements\HtmlHeader;
 use libraries\UserAuth;
 use models\Benchmark;
 use libraries\Models;
 use Ajax\semantic\html\elements\HtmlButton;
 use Ajax\semantic\html\collections\HtmlMessage;
+use Ubiquity\orm\DAO;
+use Ubiquity\utils\http\URequest;
 
  /**
  * Controller Nol
@@ -16,7 +16,7 @@ use Ajax\semantic\html\collections\HtmlMessage;
 class Nol extends ControllerBase{
 
 	public function index(){
-		if(!RequestUtils::isAjax()){
+		if(!URequest::isAjax()){
 			$_SESSION["jumbotron"]=false;
 			$header=new HtmlHeader("header");
 			$header->asImage("public/img/benchmarks.png", "phpMyBenchmarks.net","Benchmark and improve your php code to get better performances");
@@ -29,12 +29,14 @@ class Nol extends ControllerBase{
 			if(isset($_SESSION["jumbotron"]) && $_SESSION["jumbotron"]){
 				$this->jquery->get("Main/jumbotron","#menu-jumbotron");
 			}else{
-				$this->jquery->get("Main/notJumbotron","#user-buttons","{}",null,false,"replaceWith");
+				$this->jquery->get("Main/notJumbotron","#user-buttons",["hasLoader"=>false,"jqueryDone"=>"replaceWith"]);
 			}
 		}
 		$myBenchs="";
 		if(UserAuth::isAuth()){
-			$myBenchs=$this->forward("controllers\Benchmarks","myTab",[],true,true,true);
+			\ob_start();
+			$this->forward("controllers\Benchmarks","myTab",[],true,true,true);
+			$myBenchs=\ob_get_clean();
 		}
 		if(isset($_SESSION["benchmark"])){
 			if(UserAuth::isAuth() || $_SESSION["benchmark"]->getId()==null)

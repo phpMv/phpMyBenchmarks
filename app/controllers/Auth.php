@@ -1,13 +1,13 @@
 <?php
 namespace controllers;
- use micro\orm\DAO;
+ use Ubiquity\orm\DAO;
 use models\User;
-use micro\controllers\Startup;
-use micro\utils\RequestUtils;
+use Ubiquity\controllers\Startup;
 use libraries\UserAuth;
 use Ajax\semantic\html\elements\HtmlButton;
 use Ajax\semantic\html\base\constants\Social;
 use libraries\GUI;
+use Ubiquity\utils\http\URequest;
 
  /**
  * Controller Auth
@@ -44,7 +44,7 @@ class Auth extends ControllerBase{
 					$header->asImage($user->getAvatar(), $user->getLogin(),"connected");
 					echo GUI::showSimpleMessage($this->jquery, $header, "info","");
 					$this->forward("controllers\Nol","index",[],true,true);
-					$this->jquery->get("Auth/infoUser","#divInfoUser","{}",null,false);
+					$this->jquery->get("Auth/infoUser","#divInfoUser",["hasLoader"=>false]);
 					break;
 				}
 			}
@@ -73,7 +73,7 @@ class Auth extends ControllerBase{
 
 	public function createAccount(){
 		$user=new User();
-		RequestUtils::setValuesToObject($user,$_POST);
+		URequest::setValuesToObject($user,$_POST);
 		$user->setAvatar("public/img/male.png");
 		$key=md5(\microtime(true));
 		$user->setAuthkey($key);
@@ -108,15 +108,15 @@ class Auth extends ControllerBase{
 
 	private function sign($formCallback,$titles){
 		$bt=HtmlButton::social("bt-github", Social::GITHUB);
-		$bt->asLink(RequestUtils::getUrl("Auth/signin_with_hybridauth/GitHub"));
+		$bt->asLink(URequest::getUrl("Auth/signin_with_hybridauth/GitHub"));
 		$bt->compile($this->jquery,$this->view);
 
 		$bt2=HtmlButton::social("bt-google", Social::GOOGLEPLUS);
-		$bt2->asLink(RequestUtils::getUrl("Auth/signin_with_hybridauth/Google"));
+		$bt2->asLink(URequest::getUrl("Auth/signin_with_hybridauth/Google"));
 		$bt2->compile($this->jquery,$this->view);
 
 		$bt3=HtmlButton::social("bt-linkedin", Social::LINKEDIN);
-		$bt3->asLink(RequestUtils::getUrl("Auth/signin_with_hybridauth/LinkedIn"));
+		$bt3->asLink(URequest::getUrl("Auth/signin_with_hybridauth/LinkedIn"));
 		$bt3->compile($this->jquery,$this->view);
 
 		$formCallback();
@@ -168,7 +168,7 @@ class Auth extends ControllerBase{
 				Startup::runAction($_SESSION["action"], false, false);
 				unset($_SESSION["action"]);
 			} else {
-				header('location:'.RequestUtils::getUrl(""));
+				header('location:'.URequest::getUrl(""));
 			}
 		}
 	}
@@ -191,7 +191,7 @@ class Auth extends ControllerBase{
 		$message=$this->semantic->htmlMessage("message",$header);
 		$message->setDismissable()->setTimeout(5000);
 		echo $message->compile($this->jquery);
-		$this->jquery->get("Auth/infoUser","#divInfoUser","{}",null,false);
+		$this->jquery->get("Auth/infoUser","#divInfoUser",["hasLoader"=>false]);
 		$this->forward("controllers\Nol","index",[],true,true);
 		echo $this->jquery->compile();
 	}

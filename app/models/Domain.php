@@ -3,9 +3,13 @@ namespace models;
 class Domain{
 	/**
 	 * @id
-	*/
+	 * @column("name"=>"id","nullable"=>"","dbType"=>"int(11)")
+	 */
 	private $id;
 
+	/**
+	 * @column("name"=>"name","nullable"=>"","dbType"=>"varchar(100)")
+	 */
 	private $name;
 
 	 public function getId(){

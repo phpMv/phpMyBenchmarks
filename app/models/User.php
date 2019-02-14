@@ -3,19 +3,32 @@ namespace models;
 class User{
 	/**
 	 * @id
-	*/
+	 * @column("name"=>"id","nullable"=>"","dbType"=>"int(11)")
+	 */
 	private $id;
 
+	/**
+	 * @column("name"=>"login","nullable"=>"","dbType"=>"varchar(30)")
+	 */
 	private $login;
 
+	/**
+	 * @column("name"=>"email","nullable"=>"","dbType"=>"varchar(255)")
+	 */
 	private $email;
 
+	/**
+	 * @column("name"=>"password","nullable"=>"","dbType"=>"varchar(30)")
+	 */
 	private $password;
 
+	/**
+	 * @column("name"=>"avatar","nullable"=>1,"dbType"=>"varchar(255)")
+	 */
 	private $avatar;
 
 	/**
-	 * @column("name"=>"authkey","nullable"=>true)
+	 * @column("name"=>"authkey","nullable"=>"","dbType"=>"varchar(100)")
 	 */
 	private $authkey;
 

@@ -18,7 +18,6 @@
 }
 .pagehead {
 	background-color: #1B1C1D;
-	border-bottom: 1px solid #eee;
 	margin: 0 0 1rem 0;
 	position: relative;
 }
@@ -71,4 +70,32 @@ footer {
 .sitemap ul{
 	list-style-type: none;
 	padding: 0;
+}
+.note{
+	color: white !important;
+	font-size: 8pt !important;
+}
+.noteA{
+	background-color: #152D39 !important;
+}
+.noteB{
+	background-color: #328C9B !important;
+}
+.noteC{
+	background-color: #5CB8CD !important;
+}
+.noteD{
+	background-color: #FB8A52 !important;
+}
+.noteE{
+	background-color: #DD7547 !important;
+}
+.noteF{
+	background-color: #BB0D48 !important;
+}
+.noteG{
+	background-color: #9E1248 !important;
+}
+#img-evaluation {
+  opacity: 0.5;
 }

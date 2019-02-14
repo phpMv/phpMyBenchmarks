@@ -15,7 +15,7 @@ use Ajax\semantic\html\elements\HtmlLabel;
 use Ajax\semantic\html\elements\HtmlList;
 use models\Result;
 use Ajax\semantic\html\base\HtmlSemDoubleElement;
-use micro\views\View;
+use Ubiquity\views\View;
 use controllers\ControllerBase;
 
 class GUI {
@@ -66,24 +66,28 @@ class GUI {
 			if($obj!==null){
 				if($obj->type==="output"){
 					$output=\json_decode($obj->content);
-					self::showRunningMessage($jquery,null,$output->status,$form."-".$i);
-					if($output->status!=="error"){
-						$time=$output->time;
+					if(is_object($output)){
+						self::showRunningMessage($jquery,null,$output->status,$form."-".$i);
+						if($output->status!=="error"){
+							$time=$output->time;
+						}else{
+							$time="#N/A";
+						}
+	
+						if(isset($testcase)){
+							Models::addResult($execution,$testcase, $time, $output->status);
+						}
+	
+						$bt=$jquery->semantic()->htmlButton("response-".$output->form," Time","fluid");
+						$bt->addIcon("history");
+						$bt->addLabel($time)->setPointing("left")->addClass("fluid");
+						$btInterne=$bt->getContent()[0];
+						$btInterne->addClass('fluid');
+						$btInterne->addPopup("Content",$output->content);
+						echo $bt->compile($jquery);
 					}else{
-						$time="#N/A";
+						self::showRunningMessage($jquery,$obj->content,$obj->type,$form."-".$i);
 					}
-
-					if(isset($testcase)){
-						Models::addResult($execution,$testcase, $time, $output->status);
-					}
-
-					$bt=$jquery->semantic()->htmlButton("response-".$output->form," Time","fluid");
-					$bt->addIcon("history");
-					$bt->addLabel($time)->setPointing("left")->addClass("fluid");
-					$btInterne=$bt->getContent()[0];
-					$btInterne->addClass('fluid');
-					$btInterne->addPopup("Content",$output->content);
-					echo $bt->compile($jquery);
 				}elseif ($obj->type==="error"){
 					self::showRunningMessage($jquery,$obj->content,$obj->type,$form."-".$i);
 				}
@@ -223,12 +227,16 @@ class GUI {
 
 		$deBenchs->setValueFunction("results",function($str,$bench){
 			$results=Models::getLastResults($bench,true);
-			return self::getListResults($results);
+			$list= self::getListResults($results);
+			$list->addClass("see");
+			$list->setProperty("data-ajax", $bench->getId());
+			return $list;
 		});
 
 		$deBenchs->setValueFunction("name", function($name,$bench) use($jquery){
 			$elm=new HtmlSemDoubleElement("name-".$bench->getId(),"div");
-			$elm->setContent($name);
+			$lbl=self::getPhpVersion($bench->getPhpVersion());
+			$elm->setContent($name.$lbl);
 			$elm->addPopupHtml(GUI::getBenchmarkName($jquery, $bench),NULL,["setFluidWidth"=>true,"on"=>"click"]);
 			return $elm;
 		});
@@ -261,29 +269,37 @@ class GUI {
 		return $deBenchs;
 	}
 
-	public static function getListResults($results,$hasImages=true){
+	public static function getPhpVersion($phpVersion,$testcase=false){
+		$phpVersion=Models::getPhpVersion($phpVersion);
+		$lbl="";
+		if(isset($phpVersion) &&(!$testcase || $phpVersion!==Models::$DEFAULT_PHP_VERSION)){
+			$lbl=new HtmlLabel("",Models::$PHP_VERSIONS[$phpVersion]);
+			$lbl->setSize("mini");
+			$lbl=" ".$lbl;
+		}
+		return $lbl;
+	}
+
+	public static function getListResults($results,$hasImages=true,$max=3){
 		$list=new HtmlList("");
 		$list->setHorizontal();
 		$count=\count($results);
-		$lblFast="";$lblSlow="";
 		if($count>0){
-			if($count>1){
-				$lblFast=(new HtmlLabel(""))->addClass("green empty circular")." ";
-				$lblSlow=(new HtmlLabel(""))->addClass("orange empty circular")." ";
-			}
-			self::addListResult($list, $results[0],$lblFast,$hasImages);
-			if($count<3){
-				for ($i=1;$i<$count-1;$i++){
-					self::addListResult($list, $results[$i],"",$hasImages);
+			$results=\array_values($results);
+
+			if($count<$max){
+				for ($i=0;$i<$count-1;$i++){
+					self::addListResult($list, $results[$i],self::getLblNote($results[$i]),$hasImages);
 				}
 			}else{
-				for ($i=1;$i<2;$i++){
-					self::addListResult($list, $results[$i],"",$hasImages);
+				for ($i=0;$i<$max-1;$i++){
+					self::addListResult($list, $results[$i],self::getLblNote($results[$i]),$hasImages);
 				}
-				$list->addItem("...");
+				if($count>$max)
+					$list->addItem("...");
 			}
 			if($count>1){
-				self::addListResult($list, $results[$count-1],$lblSlow,$hasImages);
+				self::addListResult($list, $results[$count-1],self::getLblNote($results[$count-1]),$hasImages);
 			}
 		}
 		return $list;
@@ -292,18 +308,30 @@ class GUI {
 	public static function getResults($results){
 		$count=\count($results);
 		$result=[];
-		$lblFast="";$lblSlow="";
 		if($count>0){
+			$results=\array_values($results);
+			$result[]=self::addResult($results[0],self::getLblNote($results[0]));
 			if($count>1){
-				$lblFast=(new HtmlLabel(""))->addClass("green empty circular")." ";
-				$lblSlow=(new HtmlLabel(""))->addClass("orange empty circular")." ";
-			}
-			$result[]=self::addResult($results[0],$lblFast);
-			if($count>1){
-				$result[]=self::addResult($results[$count-1],$lblSlow);
+				$result[]=self::addResult($results[$count-1],self::getLblNote($results[$count-1]));
 			}
 		}
 		return \implode("&nbsp;", $result);
+	}
+
+	public static function getLblNote(Result $result,$small=true){
+		$note=$result->getNote();
+		if($note<=0)
+			$note="?";
+		else
+			$note=chr($note+64);
+		if($small){
+			$lbl=new HtmlLabel("lblNote-".$result->getId());
+			$lbl->addClass("empty circular note note".$note);
+		}else{
+			$lbl=new HtmlLabel("lblNote-".$result->getId(),$note);
+			$lbl->addClass("circular note note".$note);
+		}
+		return $lbl;
 	}
 
 	private static function addResult(Result $result,$tag=""){
@@ -311,9 +339,10 @@ class GUI {
 	}
 
 	public static function addListResult(HtmlList $list,Result $result,$tag="",$hasImage=true){
+		$lblVersion=self::getPhpVersion($result->getPhpVersion(),true);
 		if($hasImage)
-			$list->addItem(["image"=>"public/img/".$result->getStatus().".png","header"=>$result->getTestcase()->getName(),"description"=>$tag.Models::getTime($result->getTimer())]);
+			$list->addItem(["image"=>"public/img/".$result->getStatus().".png","header"=>$result->getTestcase()->getName(),"description"=>$tag." ".Models::getTime($result->getTimer()).$lblVersion]);
 		else
-			$list->addItem(["header"=>$result->getTestcase()->getName(),"description"=>$tag.Models::getTime($result->getTimer())]);
+			$list->addItem(["header"=>$result->getTestcase()->getName(),"description"=>$tag." ".Models::getTime($result->getTimer())]);
 	}
 }

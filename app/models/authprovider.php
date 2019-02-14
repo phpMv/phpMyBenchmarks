@@ -7,16 +7,23 @@ namespace models;
 class Authprovider{
 	/**
 	 * @id
-	*/
+	 * @column("name"=>"id","nullable"=>"","dbType"=>"int(11)")
+	 */
 	private $id;
 
+	/**
+	 * @column("name"=>"name","nullable"=>"","dbType"=>"varchar(30)")
+	 */
 	private $name;
 
+	/**
+	 * @column("name"=>"icon","nullable"=>"","dbType"=>"varchar(255)")
+	 */
 	private $icon;
 
 	/**
-	 * @oneToMany("mappedBy"=>"authprovider","className"=>"models\User")
-	*/
+	 * @oneToMany("mappedBy"=>"authprovider","className"=>"models\\User")
+	 */
 	private $users;
 
 	 public function getId(){

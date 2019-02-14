@@ -1,17 +1,18 @@
 <?php
 namespace controllers;
 use libraries\ServerExchange;
-use micro\controllers\Controller;
+use Ubiquity\controllers\Controller;
 use models\Testcase;
 use Ajax\Semantic;
 use Ajax\semantic\html\elements\HtmlButton;
-use micro\orm\DAO;
+use Ubiquity\orm\DAO;
 use models\Benchmark;
 use libraries\Models;
 use libraries\UserAuth;
 use Ajax\semantic\html\elements\HtmlButtonGroups;
 use libraries\GUI;
 use Ajax\service\JArray;
+use models\Domain;
 
  /**
  * Controller Main
@@ -56,7 +57,7 @@ class Main extends ControllerBase{
 	public function benchmark($id=null){
 		if(isset($id)){
 			if($id!=="session")
-				$benchmark=DAO::getOne("models\Benchmark", $id,true,true);
+				$benchmark=DAO::getOne(Benchmark::class, $id,true);
 			else{
 				$benchmark=$_SESSION["benchmark"];
 			}
@@ -73,8 +74,8 @@ class Main extends ControllerBase{
 		$fields=$prepForm->addFields();
 		$input=$fields->addInput("iterations","Iterations count","number",$benchmark->getIterations(),"")->setWidth(6);
 		$input->getDataField()->setProperty("max", "1000000");
-		$fields->addDropdown("phpVersion",["Default 5.6","7.0","7.1"],"php version","Default 5.6")->setDisabled();
-		$fields->addDropdown("domains",JArray::modelArray(DAO::getAll("models\Domain"),"getId","getName"),"Domains",$benchmark->getDomains(),true);
+		$fields->addDropdown("bench-phpVersion",Models::$PHP_VERSIONS,"php version",$benchmark->getPhpVersion());
+		$fields->addDropdown("domains",JArray::modelArray(DAO::getAll(Domain::class,false),"getId","getName"),"Domains",$benchmark->getDomains(),true);
 
 		$prepForm->addElement("preparation",$benchmark->getBeforeAll(),"Preparation","div","ui segment editor");
 		$forms="";
@@ -91,7 +92,7 @@ class Main extends ControllerBase{
 		$bts->getElement(0)->onClick("var form=getNextForm('form.toSubmit');if(form!=false) form.form('submit');")->addClass("teal")->addIcon("lightning");
 		$btAdd=$this->semantic->htmlButton("addTest","Add test case");
 		$btAdd->addIcon("plus");
-		$btAdd->getOnClick("Main/addFormTestCase","#forms",["jqueryDone"=>"append"]);
+		$btAdd->getOnClick("Main/addFormTestCase","#forms",["jqueryDone"=>"append","hasLoader"=>false]);
 		$this->jquery->exec("setAceEditor('preparation');",true);
 		$this->jquery->exec("google.charts.load('current', {'packages':['corechart']});",true);
 		$this->jquery->exec("$('.ui.accordion').accordion({'exclusive': false});",true);
@@ -100,7 +101,7 @@ class Main extends ControllerBase{
 	}
 	public function addFormTestCase($testcase=null,$asString=false){
 		if(!($testcase instanceof Testcase)){
-			$testcase=Models::addTest($_SESSION["benchmark"],NULL,'');
+			$testcase=Models::addTest($_SESSION["benchmark"],NULL,'',Models::$DEFAULT_PHP_VERSION);
 		}
 		$testcase->form=$testcase->getId();
 		$id="form".$testcase->getId();
@@ -135,10 +136,12 @@ class Main extends ControllerBase{
 		$formId="form".$id;
 		$form=$this->semantic->dataForm($formId, $testcase);
 		$form->addClass("test toSubmit");
-		$form->setFields(["name","code"]);
+		$form->setFields(["name","phpVersion\n","code"]);
 		$this->jquery->exec("setAceEditor('".$formId."-code-0');",true);
-		$form->setSubmitParams("Main/send/".$id,"#response-".$formId,["params"=>"{'domains':$('#domains').val(),'bench-name':$('#bench-name').val(),'bench-description':$('#bench-description').val(),'preparation':ace.edit('preparation').getValue(),'code':ace.edit('".$formId."-code-0').getValue(),'iterations':$('#iterations').val()}"]);
+		$form->setSubmitParams("Main/send/".$id,"#response-".$formId,["params"=>
+				"{'bench-phpVersion':$(\"[name='bench-phpVersion']\").val(),'domains':$('#domains').val(),'bench-name':$('#bench-name').val(),'bench-description':$('#bench-description').val(),'preparation':ace.edit('preparation').getValue(),'code':ace.edit('".$formId."-code-0').getValue(),'iterations':$('#iterations').val()}"]);
 		$form->fieldAsElement("code","div","ui segment editor");
+		$form->fieldAsDropDown(1,Models::$PHP_VERSIONS,false);
 		$btDelete=$this->semantic->htmlButton("delete-".$formId,"Delete test case","fluid");
 		$btDelete->setProperty("data-ajax", $id);
 		$btDelete->addIcon("remove circle",true,true);
@@ -155,26 +158,33 @@ class Main extends ControllerBase{
 		$iterations=min($_POST["iterations"],1000000);
 		$name=$_POST["name"];
 		$domains=$_POST["domains"];
+		$phpVersion=$_POST["bench-phpVersion"];
 		$benchmark=$_SESSION["benchmark"];
 		$benchmark->setBeforeAll($preparation);
 		$benchmark->setName($_POST["bench-name"]);
 		$benchmark->setDescription($_POST["bench-description"]);
 		$benchmark->setIterations($iterations);
 		$benchmark->setDomains($domains);
+		$benchmark->setPhpVersion($phpVersion);
 
 		$test=$benchmark->getTestByCallback(function($test) use ($id){return $test->form==$id;});
 		$test->setCode($command);
 		$test->setName($name);
+		$test->setPhpVersion($_POST["phpVersion"]);
 
 		$form="form".$id;
 		$address="127.0.0.1";$port=9001;
 		$action="run";
+		$phpVersion=Models::getTestPhpVersion($benchmark, $test);
+
 
 		$testFile="test-".\md5($name).".php";
 		$filename=ROOT.DS."..".DS."server".DS."tests".DS.$testFile;
 		$model=ROOT.DS."..".DS."server".DS."test.tpl";
 		Models::openReplaceWrite($model, $filename,["%test%"=>$command,"%preparation%"=>$preparation,"%iterations%"=>$iterations]);
 		$params=[$prefix."check.php",$prefix."tests/".$testFile,$form,$id];
+		if(isset($phpVersion) && !$isWin)
+			$params[]=$phpVersion;
 		$content=($isWin)?"php-test.bat":$prefix."php-test.sh";
 		$serverExchange=new ServerExchange($address,$port);
 		$responses=$serverExchange->send($action, $content, $params);

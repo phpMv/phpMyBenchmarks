@@ -3,8 +3,10 @@
 namespace libraries;
 
 use Ajax\JsUtils;
-use micro\js\Jquery;
+use Ubiquity\js\Jquery;
 use Ajax\semantic\html\elements\HtmlImage;
+use Ubiquity\utils\http\USession;
+use models\User;
 
 class UserAuth {
 	/**
@@ -13,10 +15,7 @@ class UserAuth {
 	 * @return User
 	 */
 	public static function getUser(){
-		$user=null;
-		if(array_key_exists("user", $_SESSION))
-			$user=$_SESSION["user"];
-		return $user;
+		return USession::get("user");
 	}
 
 	/**

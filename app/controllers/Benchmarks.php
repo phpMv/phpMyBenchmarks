@@ -1,6 +1,6 @@
 <?php
 namespace controllers;
-use micro\orm\DAO;
+use Ubiquity\orm\DAO;
 use Ajax\semantic\html\elements\HtmlLabel;
 use libraries\Models;
 use Ajax\semantic\html\elements\HtmlList;
@@ -40,8 +40,8 @@ class Benchmarks extends ControllerBase{
 
 	public function allTab(){
 		$tab=$this->semantic->htmlTab("allTabs");
-		$tab->forwardTab(0, $this->jquery, "All benchmarks", $this, "controllers\Benchmarks", "all");
-		$tab->forwardTab(1, $this->jquery, "By category", $this, "controllers\Benchmarks", "domains");
+		$tab->addAndForwardTab($this->jquery, "All benchmarks", $this, "controllers\\Benchmarks", "all");
+		$tab->addAndForwardTab($this->jquery, "By category", $this, "controllers\\Benchmarks", "domains");
 		$this->jquery->compile($this->view);
 		$this->loadView("benchmarks/allTabs.html");
 	}
@@ -178,23 +178,7 @@ class Benchmarks extends ControllerBase{
 
 		$listExecs->setValueFunction("results",function($str,$exec){
 			$results=DAO::getAll("models\Result", "idExecution=".$exec->getId()." ORDER BY timer ASC");
-			$list=new HtmlList("");
-			$list->setHorizontal();
-			$count=\count($results);
-			$lblFast="";$lblSlow="";
-			if($count>0){
-				if($count>1){
-					$lblFast=(new HtmlLabel(""))->addClass("green empty circular")." ";
-					$lblSlow=(new HtmlLabel(""))->addClass("orange empty circular")." ";
-				}
-				GUI::addListResult($list, $results[0],$lblFast);
-				for ($i=1;$i<$count-1;$i++){
-					GUI::addListResult($list, $results[$i]);
-				}
-				if($count>1){
-					GUI::addListResult($list, $results[$count-1],$lblSlow);
-				}
-			}
+			$list=GUI::getListResults($results,true,7);
 			return $list;
 		});
 		$listExecs->setActiveRowSelector("error");
@@ -203,7 +187,7 @@ class Benchmarks extends ControllerBase{
 			$listExecs->setUrls(["delete"=>"Benchmarks/deleteResult"]);
 			$listExecs->setTargetSelector(["delete"=>"#info"]);
 		}
-		$listExecs->getOnRow("click", "Benchmarks/seeExecutionResults","#ajax",["attr"=>"data-ajax"]);
+		$listExecs->getOnRow("click", "Benchmarks/seeExecutionResults","#ajax",["attr"=>"data-ajax","hasLoader"=>false,"ajaxTransition"=>"random"]);
 		return $listExecs;
 	}
 
@@ -221,14 +205,15 @@ class Benchmarks extends ControllerBase{
 		$execution=DAO::getOne("models\Execution", $idExecution);
 		$results=DAO::getOneToMany($execution, "results");
 		foreach ($results as $result){
-			$this->jquery->get("Benchmarks/seeResult/".$result->getId(),"#result-".$result->getTestcase()->getId(),"{}",null,false);
+			$testId=$result->getTestcase()->getId();
+			$this->jquery->get("Benchmarks/seeResult/".$result->getId()."/".$testId,"#result-".$testId,["hasLoader"=>false,"ajaxTransition"=>"random"]);
 		}
 		$this->jquery->exec("drawChart('".$execution->getUid()."',".Models::getChartResults($results,true).",'graph');",true);
 
 		echo $this->jquery->compile();
 	}
 
-	public function seeResult($idResult){
+	public function seeResult($idResult,$idTest){
 		$result=DAO::getOne("models\Result", $idResult);
 		GUI::showMessage($this->jquery,null,$result->getStatus(),"lbl-".$result->getId());
 		if($result->getStatus()!=="error"){
@@ -242,7 +227,10 @@ class Benchmarks extends ControllerBase{
 		$bt->addLabel($time)->setPointing("left")->addClass("fluid");
 		$btInterne=$bt->getContent()[0];
 		$btInterne->addClass('fluid');
+		$this->jquery->exec('$("#note-'.$idTest.'").html(\''.GUI::getLblNote($result,false).'\');',true);
+		$this->jquery->exec('$("#php-'.$idTest.'").html(\''.GUI::getPhpVersion($result->getPhpVersion(),true).'\');',true);
 		echo $bt;
+		echo $this->jquery->compile();
 	}
 
 	public function seeChart($idExecution){
@@ -290,7 +278,7 @@ class Benchmarks extends ControllerBase{
 			$testsIds=$_SESSION["testsIds"];
 			$this->jquery->get("Benchmarks/runTest/".$testsIds[0],"#result-".$testsIds[0]);
 		}else{
-			$this->jquery->get("Benchmarks/testTerminate","#list-executions","{}",NULL,true,"replaceWith","random");
+			$this->jquery->get("Benchmarks/testTerminate","#list-executions",["ajaxTransition"=>"random","jqueryDone"=>"replaceWith"]);
 		}
 		echo $this->jquery->compile();
 	}
@@ -298,10 +286,16 @@ class Benchmarks extends ControllerBase{
 	public function testTerminate(){
 		$execution=$_SESSION["execution"];
 		DAO::insert($execution);
-		foreach ($execution->getResults() as $result){
+		$benchmark=$execution->getBenchmark();
+		$results=$execution->getResults();
+		Models::sortResults($results);
+		$index=1;
+		foreach ($results as $result){
+			$result->setNote($index++);
+			$result->setPhpVersion(Models::getTestPhpVersion($benchmark, $result->getTestcase()));
 			DAO::insert($result);
 		}
-		$benchmark=$execution->getBenchmark();
+
 		echo $this->listExecs($benchmark);
 		echo $this->jquery->compile($this->view);
 	}

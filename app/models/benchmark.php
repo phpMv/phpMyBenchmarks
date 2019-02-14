@@ -1,74 +1,106 @@
 <?php
 namespace models;
+use libraries\Models;
+
 class Benchmark{
 	/**
 	 * @id
-	*/
+	 * @column("name"=>"id","nullable"=>"","dbType"=>"int(11)")
+	 */
 	private $id;
 
-	private $name="no name";
+	/**
+	 * @column("name"=>"name","nullable"=>"","dbType"=>"varchar(100)")
+	 */
+	private $name;
 
+	/**
+	 * @column("name"=>"description","nullable"=>"","dbType"=>"text")
+	 */
 	private $description;
 
+	/**
+	 * @column("name"=>"createdAt","nullable"=>"","dbType"=>"timestamp")
+	 */
 	private $createdAt;
 
+	/**
+	 * @column("name"=>"beforeAll","nullable"=>"","dbType"=>"text")
+	 */
 	private $beforeAll;
 
+	/**
+	 * @column("name"=>"version","nullable"=>"","dbType"=>"varchar(10)")
+	 */
 	private $version;
 
+	/**
+	 * @column("name"=>"phpVersion","nullable"=>1,"dbType"=>"varchar(10)")
+	 */
 	private $phpVersion;
-
-	private $iterations=100000;
 
 	private $idFork;
 
 	/**
-	 * @column("name"=>"analysis","nullable"=>true)
+	 * @column("name"=>"iterations","nullable"=>"","dbType"=>"int(11)")
 	 */
-	private $analysis=null;
+	private $iterations;
 
 	/**
-	 * @column("name"=>"domains","nullable"=>true)
+	 * @column("name"=>"analysis","nullable"=>1,"dbType"=>"text")
 	 */
-	private $domains="";
+	private $analysis;
 
 	/**
-	 * @transient
+	 * @column("name"=>"domains","nullable"=>"","dbType"=>"varchar(100)")
 	 */
-	private $toDelete=[];
+	private $domains;
 
 	/**
-	 * @manyToMany("targetEntity"=>"models\User","inversedBy"=>"benchstars")
+	 * @oneToMany("mappedBy"=>"benchmark","className"=>"models\\Benchmark")
+	 */
+	private $benchmarks;
+
+	/**
+	 * @manyToOne
+	 * @joinColumn("className"=>"models\\Benchmark","name"=>"idFork","nullable"=>"")
+	 */
+	private $benchmark;
+
+	/**
+	 * @oneToMany("mappedBy"=>"benchmark","className"=>"models\\Execution")
+	 */
+	private $executions;
+
+	/**
+	 * @oneToMany("mappedBy"=>"benchmark","className"=>"models\\Testcase")
+	 */
+	private $testcases;
+
+	/**
+	 * @manyToOne
+	 * @joinColumn("className"=>"models\\User","name"=>"idUser","nullable"=>"")
+	 */
+	private $user;
+
+	/**
+	 * @manyToMany("targetEntity"=>"models\\User","inversedBy"=>"benchstars")
 	 * @joinTable("name"=>"benchstar")
 	 */
 	private $userstars;
 
 	/**
-	 * @oneToMany("mappedBy"=>"benchmark","className"=>"models\Testcase")
-	*/
-	private $testcases;
-
-	/**
-	 * @manyToOne
-	 * @joinColumn("className"=>"models\User","name"=>"idUser","nullable"=>false)
-	*/
-	private $user;
-
-	/**
-	 * @oneToMany("mappedBy"=>"benchmark","className"=>"models\Execution")
+	 * @transient
 	 */
-	private $executions;
-
-
-	/**
-	 * @manyToMany("targetEntity"=>"models\User","inversedBy"=>"benchstars")
-	 * @joinTable("name"=>"benchstar")
-	 */
-	private $users;
+	private $toDelete;
 
 	public function __construct(){
+		$this->iterations=1000;
+		$this->phpVersion=Models::$DEFAULT_PHP_VERSION;
+		$this->domains="";
 		$this->testcases=[];
 		$this->executions=[];
+		$this->toDelete=[];
 	}
 
 	 public function getId(){
@@ -195,15 +227,6 @@ class Benchmark{
 			$result.=" (".\count($this->testcases)." test(s))";
 		}
 		return $result;
-	}
-
-	public function getUsers() {
-		return $this->users;
-	}
-
-	public function setUsers($users) {
-		$this->users=$users;
-		return $this;
 	}
 
 	public function getPhpVersion() {

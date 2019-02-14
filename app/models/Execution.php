@@ -3,22 +3,29 @@ namespace models;
 class Execution{
 	/**
 	 * @id
-	*/
+	 * @column("name"=>"id","nullable"=>"","dbType"=>"int(11)")
+	 */
 	private $id;
 
+	/**
+	 * @column("name"=>"uid","nullable"=>"","dbType"=>"varchar(36)")
+	 */
 	private $uid;
 
+	/**
+	 * @column("name"=>"createdAt","nullable"=>"","dbType"=>"timestamp")
+	 */
 	private $createdAt;
 
 	/**
 	 * @manyToOne
-	 * @joinColumn("className"=>"models\Benchmark","name"=>"idBenchmark","nullable"=>false)
-	*/
+	 * @joinColumn("className"=>"models\\Benchmark","name"=>"idBenchmark","nullable"=>"")
+	 */
 	private $benchmark;
 
 	/**
-	 * @oneToMany("mappedBy"=>"execution","className"=>"models\Result")
-	*/
+	 * @oneToMany("mappedBy"=>"execution","className"=>"models\\Result")
+	 */
 	private $results;
 
 	public function __construct(){

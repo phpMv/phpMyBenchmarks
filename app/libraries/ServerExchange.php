@@ -35,23 +35,27 @@ class ServerExchange{
 			throw new \ErrorException($errstr, $errno, $errno, $errfile, $errline);
 		});
 			$serverResponses=[];
-			$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-			$msg=$this->createTCPMessage($action,$content,$params);
-			try{
-				$result = socket_connect($sock, $this->server, $this->port);
-				if ($result !== false) {
-					$this->sendMessage($sock, $msg);
-					$buf = '';
-					if(false!==($buf= socket_read($sock, 2048))){
-						if(mb_detect_encoding($buf, 'UTF-8', true)===false)
-							$buf=utf8_encode($buf);
-						$serverResponses=explode("|", $buf);
+			if(function_exists('socket_create')){
+				$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+				$msg=$this->createTCPMessage($action,$content,$params);
+				try{
+					$result = socket_connect($sock, $this->server, $this->port);
+					if ($result !== false) {
+						$this->sendMessage($sock, $msg);
+						$buf = '';
+						if(false!==($buf= socket_read($sock, 2048))){
+							if(mb_detect_encoding($buf, 'UTF-8', true)===false)
+								$buf=utf8_encode($buf);
+							$serverResponses=explode("|", $buf);
+						}
+						socket_close($sock);
+						$serverResponses[]='{"type":"info","content":"Lecture de '.strlen($buf).' bytes provenant du serveur.\nFermeture de la connexion..."}';
 					}
-					socket_close($sock);
-					$serverResponses[]='{"type":"info","content":"Lecture de '.strlen($buf).' bytes provenant du serveur.\nFermeture de la connexion..."}';
+				}catch(\ErrorException $e){
+					$serverResponses[]='{"type":"error","content":"Communication impossible avec le serveur.\nAssurez vous que <b>vhServer</b> est lancé sur '.$this->server.' et écoute sur le port '.$this->port.'"}';
 				}
-			}catch(ErrorException $e){
-				$serverResponses[]='{"type":"error","content":"Communication impossible avec le serveur.\nAssurez vous que <b>vhServer</b> est lancé sur '.$this->server.' et écoute sur le port '.$this->port.'"}';
+			}else{
+				$serverResponses[]='{"type":"error","content":"The function socket_create does not exists ont this server!"}';
 			}
 			return $serverResponses;
 	}
