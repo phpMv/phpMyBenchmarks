@@ -2,7 +2,7 @@
 	"require" : {
 		"twig/twig" : "^2.0",
 		"mindplay/annotations" : "dev-master",
-		"phpmv/ubiquity" : "2.0.x-dev",
+		"phpmv/ubiquity" : "dev-master",
 		"phpmv/php-mv-ui" : "dev-master",
 		"hybridauth/hybridauth" : "~2.5.1"
 	},
