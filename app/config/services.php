@@ -3,7 +3,7 @@ use Ubiquity\controllers\Router;
 use Ubiquity\cache\CacheManager;
 
 CacheManager::startProd($config);
-$db=$config["database"];
-\Ubiquity\orm\DAO::connect($db["type"],$db["dbName"],@$db["serverName"],@$db["port"],@$db["user"],@$db["password"],@$db["options"],@$db["cache"]);
+\Ubiquity\orm\DAO::start();
 Router::start();
 Router::addRoute("_default", "controllers\Nol");
+\Ubiquity\assets\AssetsManager::start($config);

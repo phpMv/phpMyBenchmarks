@@ -1,132 +1,177 @@
 <?php
 namespace models;
+
+use Ubiquity\attributes\items\Id;
+use Ubiquity\attributes\items\Column;
+use Ubiquity\attributes\items\Validator;
+use Ubiquity\attributes\items\Transformer;
+use Ubiquity\attributes\items\Table;
+use Ubiquity\attributes\items\ManyToOne;
+use Ubiquity\attributes\items\JoinColumn;
+use Ubiquity\attributes\items\OneToMany;
+use Ubiquity\attributes\items\ManyToMany;
+use Ubiquity\attributes\items\JoinTable;
+
+#[\AllowDynamicProperties()]
+#[Table(name: "user")]
 class User{
-	/**
-	 * @id
-	 * @column("name"=>"id","nullable"=>"","dbType"=>"int(11)")
-	 */
+	
+	#[Id()]
+	#[Column(name: "id",dbType: "int(11)")]
+	#[Validator(type: "id",constraints: ["autoinc"=>true])]
 	private $id;
 
-	/**
-	 * @column("name"=>"login","nullable"=>"","dbType"=>"varchar(30)")
-	 */
+	
+	#[Column(name: "login",dbType: "varchar(30)")]
+	#[Validator(type: "length",constraints: ["max"=>"30","notNull"=>true])]
 	private $login;
 
-	/**
-	 * @column("name"=>"email","nullable"=>"","dbType"=>"varchar(255)")
-	 */
+	
+	#[Column(name: "email",dbType: "varchar(255)")]
+	#[Validator(type: "email",constraints: ["notNull"=>true])]
+	#[Validator(type: "length",constraints: ["max"=>"255"])]
 	private $email;
 
-	/**
-	 * @column("name"=>"password","nullable"=>"","dbType"=>"varchar(30)")
-	 */
+	
+	#[Column(name: "password",dbType: "varchar(30)")]
+	#[Validator(type: "length",constraints: ["max"=>"30","notNull"=>true])]
+	#[Transformer(name: "password")]
 	private $password;
 
-	/**
-	 * @column("name"=>"avatar","nullable"=>1,"dbType"=>"varchar(255)")
-	 */
+	
+	#[Column(name: "avatar",nullable: true,dbType: "varchar(255)")]
+	#[Validator(type: "length",constraints: ["max"=>"255"])]
 	private $avatar;
 
-	/**
-	 * @column("name"=>"authkey","nullable"=>"","dbType"=>"varchar(100)")
-	 */
+	
+	#[Column(name: "authkey", nullable: true, dbType: "varchar(100)")]
+	#[Validator(type: "length",constraints: ["max"=>"100","notNull"=>false])]
 	private $authkey;
 
-	/**
-	 * @oneToMany("mappedBy"=>"user","className"=>"models\Benchmark")
-	*/
+	
+	#[ManyToOne()]
+	#[JoinColumn(name: "idAuthProvider", className: "models\\Authprovider", nullable: true)]
+	private $authprovider;
+
+	
+	#[OneToMany(mappedBy: "user",className: "models\\Benchmark")]
 	private $benchmarks;
 
-	/**
-	 * @manyToMany("targetEntity"=>"models\Benchmark","inversedBy"=>"userstars")
-	 * @joinTable("name"=>"benchstar")
-	 */
+	
+	#[ManyToMany(targetEntity: "models\\Benchmark",inversedBy: "users")]
+	#[JoinTable(name: "benchstar")]
 	private $benchstars;
 
-	/**
-	 * @manyToOne
-	 * @joinColumn("name"=>"idAuthProvider","className"=>"models\Authprovider","nullable"=>true)
-	 */
-	private $authProvider;
 
-	 public function getId(){
+	 public function __construct(){
+		$this->benchmarks = [];
+		$this->benchstars = [];
+	}
+
+
+	public function getId(){
 		return $this->id;
 	}
 
-	 public function setId($id){
+
+	public function setId($id){
 		$this->id=$id;
 	}
 
-	 public function getLogin(){
+
+	public function getLogin(){
 		return $this->login;
 	}
 
-	 public function setLogin($login){
+
+	public function setLogin($login){
 		$this->login=$login;
 	}
 
-	 public function getEmail(){
+
+	public function getEmail(){
 		return $this->email;
 	}
 
-	 public function setEmail($mail){
-		$this->email=$mail;
+
+	public function setEmail($email){
+		$this->email=$email;
 	}
 
-	 public function getPassword(){
+
+	public function getPassword(){
 		return $this->password;
 	}
 
-	 public function setPassword($password){
+
+	public function setPassword($password){
 		$this->password=$password;
 	}
 
-	 public function getAuthkey(){
-		return $this->authkey;
-	}
 
-	 public function setAuthkey($authkey){
-		$this->authkey=$authkey;
-	}
-
-	 public function getBenchmarks(){
-		return $this->benchmarks;
-	}
-
-	 public function setBenchmarks($benchmarks){
-		$this->benchmarks=$benchmarks;
-	}
-
-	public function getAuthProvider() {
-		return $this->authProvider;
-	}
-
-	public function setAuthProvider($authProvider) {
-		$this->authProvider=$authProvider;
-		return $this;
-	}
-
-	public function getBenchstars() {
-		return $this->benchstars;
-	}
-
-	public function setBenchstars($benchstars) {
-		$this->benchstars=$benchstars;
-		return $this;
-	}
-
-	public function getAvatar() {
-		if(!isset($this->avatar))
-			return "public/img/male.png";
+	public function getAvatar(){
 		return $this->avatar;
 	}
 
-	public function setAvatar($avatar) {
+
+	public function setAvatar($avatar){
 		$this->avatar=$avatar;
-		return $this;
 	}
 
 
+	public function getAuthkey(){
+		return $this->authkey;
+	}
 
+
+	public function setAuthkey($authkey){
+		$this->authkey=$authkey;
+	}
+
+
+	public function getAuthprovider(){
+		return $this->authprovider;
+	}
+
+
+	public function setAuthprovider($authprovider){
+		$this->authprovider=$authprovider;
+	}
+
+
+	public function getBenchmarks(){
+		return $this->benchmarks;
+	}
+
+
+	public function setBenchmarks($benchmarks){
+		$this->benchmarks=$benchmarks;
+	}
+
+
+	 public function addToBenchmarks($benchmark){
+		$this->benchmarks[]=$benchmark;
+		$benchmark->setUser($this);
+	}
+
+
+	public function getBenchstars(){
+		return $this->benchstars;
+	}
+
+
+	public function setBenchstars($benchstars){
+		$this->benchstars=$benchstars;
+	}
+
+
+	 public function addBenchstar($benchstar){
+		$this->benchstars[]=$benchstar;
+	}
+
+
+	 public function __toString(){
+		return ($this->avatar??'no value').'';
+	}
 
 }

@@ -1,5 +1,6 @@
 <?php
 namespace controllers;
+ use Ubiquity\client\oauth\OAuthManager;
  use Ubiquity\orm\DAO;
 use models\User;
 use Ubiquity\controllers\Startup;
@@ -108,15 +109,15 @@ class Auth extends ControllerBase{
 
 	private function sign($formCallback,$titles){
 		$bt=HtmlButton::social("bt-github", Social::GITHUB);
-		$bt->asLink(URequest::getUrl("Auth/signin_with_hybridauth/GitHub"));
+		$bt->asLink(URequest::getUrl("oauth/GitHub"));
 		$bt->compile($this->jquery,$this->view);
 
 		$bt2=HtmlButton::social("bt-google", Social::GOOGLEPLUS);
-		$bt2->asLink(URequest::getUrl("Auth/signin_with_hybridauth/Google"));
+		$bt2->asLink(URequest::getUrl("oauth/Google"));
 		$bt2->compile($this->jquery,$this->view);
 
 		$bt3=HtmlButton::social("bt-linkedin", Social::LINKEDIN);
-		$bt3->asLink(URequest::getUrl("Auth/signin_with_hybridauth/LinkedIn"));
+		$bt3->asLink(URequest::getUrl("oauth/LinkedIn"));
 		$bt3->compile($this->jquery,$this->view);
 
 		$formCallback();
@@ -125,64 +126,17 @@ class Auth extends ControllerBase{
 		$this->loadView("Auth/sign.html",$titles);
 	}
 
-	public function hybridauth_endpoint() {
-		include ROOT."./../vendor/hybridauth/hybridauth/hybridauth/index.php";
-	}
-
-	/**
-	 * @param string $provider
-	 * @return \Hybrid_Provider_Adapter
-	 */
-	private function getAdapter($provider){
-		$authConfig=ROOT."./hybridauth/config.php";
-		include ROOT."./../vendor/hybridauth/hybridauth/hybridauth/Hybrid/Auth.php";
-
-		$hybridauth=new \Hybrid_Auth($authConfig);
-		return $hybridauth->authenticate($provider);
-	}
-
-	public function signin_with_hybridauth($provider) {
-		$adapter=$this->getAdapter($provider);
-		$user_profile=$adapter->getUserProfile();
-
-		$dbProvider=DAO::getOne("models\Authprovider", array (
-				"name" => $provider
-		));
-		if ($dbProvider!=NULL) {
-			$user=DAO::getOne("models\User", array (
-					"login" => $user_profile->displayName,"idAuthProvider" => $dbProvider->getId()
-			));
-			if ($user===null) {
-				$user=new User();
-				$user->setLogin($user_profile->displayName);
-				$user->setEmail($user_profile->email);
-				$user->setAuthProvider($dbProvider);
-				$user->setAuthkey($user_profile->identifier);
-				$user->setAvatar($user_profile->photoURL);
-				DAO::insert($user);
-			}
-			$_SESSION["user"]=$user;
-			$user->setAvatar($user_profile->photoURL);
-			setcookie("autoConnect", $provider, time()+3600, "/");
-			if (array_key_exists("action", $_SESSION)) {
-				Startup::runAction($_SESSION["action"], false, false);
-				unset($_SESSION["action"]);
-			} else {
-				header('location:'.URequest::getUrl(""));
-			}
-		}
-	}
 	public function infoUser() {
 		echo UserAuth::getInfoUser($this->jquery);
 		echo $this->jquery->compile();
 	}
 
 	public function disconnect(){
-		$user=UserAuth::getUser();
+        $user=UserAuth::getUser();
 		$authProvider=$user->getAuthProvider();
 		if(isset($authProvider)){
-			$adapter=$this->getAdapter($user->getAuthProvider()->getName());
-			$adapter->logout();
+			$adapter=OAuthManager::getAdapter($user->getAuthProvider()->getName());
+			$adapter->disconnect();
 		}
 		unset($_SESSION["user"]);
 

@@ -19,7 +19,7 @@ class Nol extends ControllerBase{
 		if(!URequest::isAjax()){
 			$_SESSION["jumbotron"]=false;
 			$header=new HtmlHeader("header");
-			$header->asImage("public/img/benchmarks.png", "phpMyBenchmarks.net","Benchmark and improve your php code to get better performances");
+			$header->asImage("img/benchmarks.png", "phpMyBenchmarks.net","Benchmark and improve your php code to get better performances");
 			$buttons=GUI::getJumboButtons();
 
 			$headerMessage=$this->semantic->htmlMessage("jumbotron",[$header,$buttons]);
