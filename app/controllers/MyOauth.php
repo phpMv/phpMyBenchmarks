@@ -17,14 +17,14 @@ class MyOauth extends \Ubiquity\controllers\auth\AbstractOAuthController {
 	}
 	
 	#[Get(path: "oauth/{name}")]
-	public function _oauth(string $name):void {
-		parent::_oauth($name);
+	public function _oauth(string $name, ?string $callbackUrl = null):void {
+		parent::_oauth($name,'https://phpmybenchmarks.kobject.net/oauth/'.$name);
 	}
 	
 	protected function onConnect(string $name,AdapterInterface $provider){
         $user_profile=$provider->getUserProfile();
         $dbProvider=DAO::getOne("models\Authprovider", array (
-            "name" => $provider
+            "name" => $name
         ));
         if ($dbProvider!=NULL) {
             $user=DAO::getOne("models\User", array (
