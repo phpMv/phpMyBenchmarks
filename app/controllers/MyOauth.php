@@ -41,7 +41,7 @@ class MyOauth extends \Ubiquity\controllers\auth\AbstractOAuthController {
             }
             $_SESSION["user"]=$user;
             $user->setAvatar($user_profile->photoURL);
-            setcookie("autoConnect", $provider, time()+3600, "/");
+            setcookie("autoConnect", $name, time()+3600, "/");
             if (array_key_exists("action", $_SESSION)) {
                 Startup::runAction($_SESSION["action"], false, false);
                 unset($_SESSION["action"]);
