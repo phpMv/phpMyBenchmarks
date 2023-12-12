@@ -13,8 +13,9 @@ use Ajax\semantic\html\elements\HtmlButtonGroups;
 use libraries\GUI;
 use Ajax\service\JArray;
 use models\Domain;
+use Ubiquity\utils\models\UArrayModels;
 
- /**
+/**
  * Controller Main
  **/
 class Main extends ControllerBase{
@@ -75,7 +76,7 @@ class Main extends ControllerBase{
 		$input=$fields->addInput("iterations","Iterations count","number",$benchmark->getIterations(),"")->setWidth(6);
 		$input->getDataField()->setProperty("max", "1000000");
 		$fields->addDropdown("bench-phpVersion",Models::$PHP_VERSIONS,"php version",$benchmark->getPhpVersion());
-		$fields->addDropdown("domains",JArray::modelArray(DAO::getAll(Domain::class,false),"getId","getName"),"Domains",$benchmark->getDomains(),true);
+		$fields->addDropdown("domains",UArrayModels::asKeyValues(DAO::getAll(Domain::class,'',false),"getId","getName"),"Domains",$benchmark->getDomains(),true);
 
 		$prepForm->addElement("preparation",$benchmark->getBeforeAll(),"Preparation","div","ui segment editor");
 		$forms="";
