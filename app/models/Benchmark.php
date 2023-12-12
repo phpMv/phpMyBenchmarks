@@ -244,12 +244,26 @@ class Benchmark{
     }
 
     public function getUserstars() {
-        return $this->userstars;
+        return $this->users;
     }
 
     public function setUserstars($userstars) {
-        $this->userstars=$userstars;
+        $this->users=$userstars;
         return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUsers() {
+        return $this->users;
+    }
+
+    /**
+     * @param mixed $users
+     */
+    public function setUsers($users): void {
+        $this->users = $users;
     }
 
     public function getExecutions() {
