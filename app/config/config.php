@@ -1,14 +1,14 @@
 <?php
 return array(
-		"siteUrl"=>"http://127.0.0.1/phpmybenchmarks/",
+		"siteUrl"=>"https://phpmybenchmarks.kobject.net/",
 		"database"=>[
 				"dbName"=>"benchmarks",
                 "wrapper"=>"Ubiquity\\db\\providers\\pdo\\PDOWrapper",
 				"type"=>"mysql",
 				"serverName"=>"127.0.0.1",
 				"port"=>"3306",
-				"user"=>"root",
-				"password"=>"",
+				"user"=>"admin",
+				"password"=>"ilovedev",
                 "options"=>[],
 				"cache"=>false
 		],
