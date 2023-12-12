@@ -292,6 +292,7 @@ class Benchmarks extends ControllerBase{
 		$index=1;
 		foreach ($results as $result){
 			$result->setNote($index++);
+            $result->setUid(\md5(\microtime()));
 			$result->setPhpVersion(Models::getTestPhpVersion($benchmark, $result->getTestcase()));
 			DAO::insert($result);
 		}
