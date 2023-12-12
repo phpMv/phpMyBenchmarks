@@ -23,7 +23,7 @@ class Result{
 	private $uid;
 
 	
-	#[Column(name: "createdAt",dbType: "timestamp")]
+	#[Column(name: "createdAt", nullable: true, dbType: "timestamp")]
 	#[Validator(type: "notNull",constraints: [])]
 	private $createdAt;
 
