@@ -145,7 +145,8 @@ class Models {
 		else{
 			$id=$benchmark;
 			}
-		return DAO::$db->count('benchstar',"idBenchmark=".$id);
+        $db=DAO::getDb(Benchmark::class);
+		return $db->count('benchstar',"idBenchmark=".$id);
 	}
 
 	public static function stared($benchmark){
@@ -158,7 +159,8 @@ class Models {
 		if(UserAuth::isAuth()){
 			$where.=" AND idUser=".UserAuth::getUser()->getId();
 		}
-		return DAO::$db->count('benchstar',$where)==1;
+        $db=DAO::getDb(Benchmark::class);
+		return $db->count('benchstar',$where)==1;
 	}
 
 	public static function save(Benchmark $benchmark){
