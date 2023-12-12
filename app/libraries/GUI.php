@@ -341,7 +341,7 @@ class GUI {
 	public static function addListResult(HtmlList $list,Result $result,$tag="",$hasImage=true){
 		$lblVersion=self::getPhpVersion($result->getPhpVersion(),true);
 		if($hasImage)
-			$list->addItem(["image"=>"public/img/".$result->getStatus().".png","header"=>$result->getTestcase()->getName(),"description"=>$tag." ".Models::getTime($result->getTimer()).$lblVersion]);
+			$list->addItem(["image"=>"img/".$result->getStatus().".png","header"=>$result->getTestcase()->getName(),"description"=>$tag." ".Models::getTime($result->getTimer()).$lblVersion]);
 		else
 			$list->addItem(["header"=>$result->getTestcase()->getName(),"description"=>$tag." ".Models::getTime($result->getTimer())]);
 	}

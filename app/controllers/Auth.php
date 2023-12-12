@@ -75,7 +75,7 @@ class Auth extends ControllerBase{
 	public function createAccount(){
 		$user=new User();
 		URequest::setValuesToObject($user,$_POST);
-		$user->setAvatar("public/img/male.png");
+		$user->setAvatar("img/male.png");
 		$key=md5(\microtime(true));
 		$user->setAuthkey($key);
 		try{

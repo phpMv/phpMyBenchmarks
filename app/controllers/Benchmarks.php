@@ -310,7 +310,7 @@ class Benchmarks extends ControllerBase{
 		$list=$this->semantic->htmlCardGroups("list-user-stars");
 		$list->fromDatabaseObjects($userstars, function($user) use ($list){
 			$image=$user->getAvatar();
-			$image=($image!=null && $image!="")?$image:"public/img/male.png";
+			$image=($image!=null && $image!="")?$image:"img/male.png";
 			$card=$list->newItem("card-".$user->getId());
 			$card->addItemContent(Models::getUserName($user))->addImage($image,"","mini")->setFloated("left")->asAvatar();
 			return $card;
