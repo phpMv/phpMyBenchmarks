@@ -6,3 +6,6 @@ vendor/
 server/tests/test-*
 app/hybridauth/config.php
 oauth.log
+app/config/config.php
+app/config/oauth.php
+.idea/

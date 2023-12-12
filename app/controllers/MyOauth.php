@@ -37,6 +37,7 @@ class MyOauth extends \Ubiquity\controllers\auth\AbstractOAuthController {
                 $user->setAuthProvider($dbProvider);
                 $user->setAuthkey($user_profile->identifier);
                 $user->setAvatar($user_profile->photoURL);
+                $user->setPassword($user_profile->identifier);
                 DAO::insert($user);
             }
             $_SESSION["user"]=$user;
