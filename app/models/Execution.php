@@ -98,6 +98,9 @@ class Execution{
 		$result->setExecution($this);
 	}
 
+    public function addResult($result){
+         $this->results[]=$result;
+    }
 
 	 public function __toString(){
 		return ($this->createdAt??'no value').'';
