@@ -76,8 +76,7 @@ class Main extends ControllerBase{
 		$input=$fields->addInput("iterations","Iterations count","number",$benchmark->getIterations(),"")->setWidth(6);
 		$input->getDataField()->setProperty("max", "1000000");
 		$fields->addDropdown("bench-phpVersion",Models::$PHP_VERSIONS,"php version",$benchmark->getPhpVersion());
-		$fields->addDropdown("domains",UArrayModels::asKeyValues(DAO::getAll(Domain::class,'',false),"getId","getName"),"Domains",$benchmark->getDomains(),true);
-
+		$fields->addDropdown("domains",UArrayModels::asKeyValues(DAO::getAll(Domain::class,'',false),"getId","getName"),"Domains",$benchmark->getDomainIds(),true);
 		$prepForm->addElement("preparation",$benchmark->getBeforeAll(),"Preparation","div","ui segment editor");
 		$forms="";
 		foreach ($benchmark->getTestcases() as $testcase){

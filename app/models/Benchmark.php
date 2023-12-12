@@ -318,6 +318,14 @@ class Benchmark{
         return $this->domains;
     }
 
+    public function getDomainIds() {
+        $result=[];
+        foreach ($this->domains as $domain){
+            $result[]=$domain->getId();
+        }
+        return implode(",", $result);
+    }
+
     public function setDomains($domains) {
         $this->domains=$domains;
         return $this;
