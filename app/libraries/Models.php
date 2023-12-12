@@ -11,8 +11,8 @@ use models\User;
 use Ubiquity\utils\base\UArray;
 
 class Models {
-	public static $PHP_VERSIONS=["5.4.45"=>"5.4","5.6.33"=>"5.6","7.3.1"=>"Default 7.3","7.0.33"=>"7.0","7.1.8"=>"7.1","7.2.2"=>"7.2"];
-	public static $DEFAULT_PHP_VERSION="7.3.1";
+	public static $PHP_VERSIONS=["8.2.13"=>"Default 8.2"];
+	public static $DEFAULT_PHP_VERSION="8.2.13";
 	public static $NOTES=['152D39','5CB8CD','328C9B','FB8A52','DD7547','BB0D48','9E1248'];
 
 	const TIME_UNITS=[" "=>1,"m"=>0.001,"µ"=>0.000001,"n"=>0.000000001];

@@ -1,6 +1,6 @@
 <?php
 return array(
-	"callback"=>"/oauth",
+	"callback"=>"https://phpmybenchmarks.kobject.net/oauth",
 	"providers"=>[
 			"GitHub"=>[
 					"enabled"=>true,
