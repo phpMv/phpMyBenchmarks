@@ -135,7 +135,7 @@ class Auth extends ControllerBase{
         $user=UserAuth::getUser();
 		$authProvider=$user->getAuthProvider();
 		if(isset($authProvider)){
-			$adapter=OAuthManager::getAdapter($user->getAuthProvider()->getName());
+			$adapter=OAuthManager::startAdapter($user->getAuthProvider()->getName());
 			$adapter->disconnect();
 		}
 		unset($_SESSION["user"]);
