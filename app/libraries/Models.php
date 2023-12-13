@@ -27,9 +27,10 @@ class Models {
 		$test=new Testcase();
 		$id=$benchmark->nextTestCaseId();
 		$test->setId($id);
-		if(isset($phpVersion))
-			$test->setPhpVersion($phpVersion);
 		$benchmark->addTestcase($test);
+        if(isset($phpVersion)) {
+            $test->setPhpVersion($phpVersion);
+        }
 		if(!isset($name)){
 			$name="test #".$id;
 		}
@@ -84,7 +85,7 @@ class Models {
 		}
 		$return[]=$result;
 		if($benchmark->getIdFork()!=NULL && $recursive){
-			$forked=DAO::getOne("models\Benchmark", $benchmark->getIdFork());
+			$forked=DAO::getById(Benchmark::class, $benchmark->getIdFork());
 			if(isset($forked))
 				$return[]=self::getBenchmarkName($forked,false)[0];
 		}
@@ -102,13 +103,13 @@ class Models {
 		$executions=$benchmark->getExecutions();
 		$execution=self::getLastExecution($executions);
 		if($execution!==NULL){
-			return DAO::getAll("models\Result","idExecution='".$execution->getId()."' ORDER BY status DESC,timer ASC");
+			return DAO::getAll(Result::class,"idExecution='".$execution->getId()."' ORDER BY status DESC,timer ASC");
 		}
 		return [];
 	}
 
 	public static function getLastBenchmark($idDomain,$sqlMy=""){
-		return DAO::getOne("models\Benchmark", "INSTR(`domains`, '".$idDomain."')>0".$sqlMy." ORDER BY createdAt DESC LIMIT 1 OFFSET 0",true,true);
+		return DAO::getOne(Benchmark::class, "INSTR(`domains`, '".$idDomain."')>0".$sqlMy." ORDER BY createdAt DESC LIMIT 1 OFFSET 0",true,true);
 	}
 
 	public static function getTestIds(Benchmark $benchmark){

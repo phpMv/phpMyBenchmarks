@@ -64,7 +64,7 @@ class Benchmark{
 	
 	#[Column(name: "domains", nullable: true, dbType: "varchar(100)")]
 	#[Validator(type: "length",constraints: ["max"=>"100","notNull"=>false])]
-	private $domains;
+	private $domains='';
 
 	
 	#[OneToMany(mappedBy: "benchmark",className: "models\\Benchmark")]
@@ -183,6 +183,7 @@ class Benchmark{
     public function addTestcase(Testcase $testcase){
         $this->testcases[]=$testcase;
         $testcase->setBenchmark($this);
+        $testcase->setPhpVersion($this->phpVersion);
         return \count($this->testcases);
     }
 
