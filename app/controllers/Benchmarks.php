@@ -276,7 +276,7 @@ class Benchmarks extends ControllerBase{
 		\array_shift($_SESSION["testsIds"]);
 		if(\count($_SESSION["testsIds"])>0){
 			$testsIds=$_SESSION["testsIds"];
-			$this->jquery->get("Benchmarks/runTest/".$testsIds[0],"#result-".$testsIds[0]);
+			$this->jquery->get("Benchmarks/runTest/".$testsIds[0],"#result-".$testsIds[0],['jsCallback'=>'console.log(data);']);
 		}else{
 			$this->jquery->get("Benchmarks/testTerminate","#list-executions",["ajaxTransition"=>"random","jqueryDone"=>"replaceWith"]);
 		}

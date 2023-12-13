@@ -46,7 +46,7 @@ class Nol extends ControllerBase{
 		$this->loadView("main/index.html",["myBenchs"=>$myBenchs]);
 	}
 	public function all(){
-		$benchmarks=DAO::getAll("models\Benchmark","1=1 ORDER BY createdAt DESC".$this->getLimitOffset(),true,true);
+		$benchmarks=DAO::getAll(Benchmark::class,"1=1 ORDER BY createdAt DESC".$this->getLimitOffset(),true,true);
 		GUI::displayBenchmarks($this->jquery,$this->view,$this,$benchmarks,"All benchmarks","Benchmarks/allTab",DAO::count("models\Benchmark"));
 	}
 
@@ -63,8 +63,8 @@ class Nol extends ControllerBase{
 		$segment=$this->semantic->htmlSegment("tmp-bench");
 		$bt=new HtmlButton("btUpdate","Update");
 		$bt->addLabel(Models::getBenchmarkName($benchmark),true,"edit");
-		$bt->getOnClick("Main/benchmark/session","#main-container",["ajaxTransition"=>"random"]);
-		$segment->setContent(["Last benchmark&nbsp;".$saved,$bt]);
+		$bt->getOnClick('Main/benchmark/session',"#main-container",['hasLoader'=>'internal']);
+		$segment->setContent(['Last benchmark&nbsp;'.$saved,$bt]);
 		if(!UserAuth::isAuth()){
 			$message=new HtmlMessage("msg-tmp-bench");
 			$message->setDismissable();

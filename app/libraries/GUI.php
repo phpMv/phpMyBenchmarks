@@ -112,8 +112,8 @@ class GUI {
 		$id=$benchmark->getId();
 		$bt=$jquery->semantic()->htmlButton("bt-fork-".$id,"Fork");
 		$bt->addIcon("fork");
-		$bt->addLabel(Models::countFork($benchmark))->setPointing("left")->getOnClick("Benchmarks/forks/".$id,"#main-container",["ajaxTransition"=>"random"]);
-		$bt->getOnClick("Main/fork/".$id,"#main-container",["ajaxTransition"=>"random"]);
+		$bt->addLabel(Models::countFork($benchmark))->setPointing('left')->getOnClick('Benchmarks/forks/'.$id,'#main-container',['hasLoader'=>'internal']);
+		$bt->getOnClick('Main/fork/'.$id,'#main-container',['hasLoader'=>'internal']);
 		return $bt;
 	}
 
@@ -143,22 +143,22 @@ class GUI {
 			$id=$benchmark;
 		}
 		$stared=Models::stared($benchmark);
-		$bt=$jquery->semantic()->htmlButton("bt-star-".$id)->setProperty("title", "Star");
-		$bt->addIcon("star")->setColor(($stared)?"green":"");
-		$bt->addLabel(Models::countStar($benchmark))->setPointing("left")->getOnClick("Benchmarks/stars/".$id,"#main-container",["ajaxTransition"=>"random"]);
+		$bt=$jquery->semantic()->htmlButton('bt-star-'.$id)->setProperty('title', 'Star');
+		$bt->addIcon('star')->setColor(($stared)?'green':'');
+		$bt->addLabel(Models::countStar($benchmark))->setPointing('left')->getOnClick('Benchmarks/stars/'.$id,'#main-container',['hasLoader'=>'internal']);
 		if(UserAuth::isAuth())
-			$bt->getOnClick("Main/".(($stared)?"unstar":"star")."/".$id,"#bt-star-".$id,["jqueryDone"=>"replaceWith"]);
+			$bt->getOnClick('Main/'.(($stared)?'unstar':'star').'/'.$id,'#bt-star-'.$id,['jqueryDone'=>'replaceWith']);
 		return $bt;
 	}
 
 	public static function getToolbar(JsUtils $jquery,$user,Benchmark $benchmark){
-		$toolbar=$jquery->semantic()->htmlButtonGroups("toolBar");
+		$toolbar=$jquery->semantic()->htmlButtonGroups('toolBar');
 		$idBenchmark=$benchmark->getId();
 
 		if(isset($user)){
 			if($user->getId()==$benchmark->getUser()->getId()){
-				$toolbar->addItem("Run test cases")->getOnClick("Benchmarks/run/".$idBenchmark,"#testTerminate")->addClass("teal")->addIcon("lightning");
-				$toolbar->addItem("Update")->getOnClick("Main/benchmark/".$idBenchmark,"#main-container",["ajaxTransition"=>"random"])->addIcon("edit");
+				$toolbar->addItem('Run test cases')->getOnClick('Benchmarks/run/'.$idBenchmark,'#testTerminate',['hasLoader'=>'internal'])->addClass('teal')->addIcon('lightning');
+				$toolbar->addItem('Update')->getOnClick('Main/benchmark/'.$idBenchmark,'#main-container',['hasLoader'=>'internal'])->addIcon('edit');
 			}
 			$toolbar->addItem(GUI::forkButton($jquery, $benchmark));
 		}
@@ -172,7 +172,7 @@ class GUI {
 		$buttons->getElement(1)->setProperty("data-ajax", "Benchmarks/allTab");
 
 		self::getButtons($buttons,$inJumbotron);
-		$buttons->getOnClick("","#main-container",["attr"=>"data-ajax"]);
+		$buttons->getOnClick('','#main-container',['attr'=>'data-ajax','hasLoader'=>'internal']);
 		return $buttons;
 	}
 
@@ -210,7 +210,7 @@ class GUI {
 		$deBenchs->setIdentifierFunction("getId");
 
 		$bt=new HtmlButton("add-benchmark","Create benchmark","green");
-		$bt->getOnClick("Main/createBenchmark","#main-container")->addIcon("plus");
+		$bt->getOnClick("Main/createBenchmark","#main-container",['hasLoader'=>'internal'])->addIcon("plus");
 		$msg=new HtmlMessage("empty-message",["no benchmark to display&nbsp;",$bt]);
 		$msg->setIcon("info circle");
 
@@ -243,7 +243,7 @@ class GUI {
 
 		$deBenchs->setValueFunction("createdAt", function($time){return Models::time_elapsed_string($time,false);});
 
-		$deBenchs->addEditDeleteButtons(true,["ajaxTransition"=>"random"],function($edit,$bench){
+		$deBenchs->addEditDeleteButtons(true,['hasLoader'=>'internal'],function($edit,$bench){
 			if(!isset($_SESSION["user"]) || $bench->getUser()->getId()!=$_SESSION["user"]->getId())
 				$edit->wrap("<!--","-->");
 		},
@@ -264,8 +264,8 @@ class GUI {
 		$deBenchs->setUrls(["refresh"=>$jsonUrl,"edit"=>"Main/benchmark","delete"=>"Benchmarks/delete"]);
 		$deBenchs->setTargetSelector(["edit"=>"#main-container","delete"=>"#info"]);
 
-		$jquery->getOnClick(".see", "Benchmarks/seeOne","#main-container",["attr"=>"data-ajax"]);
-		$jquery->getOnClick(".fork", "Main/fork","#main-container",["attr"=>"data-ajax"]);
+		$jquery->getOnClick('.see', 'Benchmarks/seeOne','#main-container',['attr'=>'data-ajax','hasLoader'=>'internal']);
+		$jquery->getOnClick('.fork', 'Main/fork','#main-container',['attr'=>'data-ajax','hasLoader'=>'internal']);
 		return $deBenchs;
 	}
 

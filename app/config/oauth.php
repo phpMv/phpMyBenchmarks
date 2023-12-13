@@ -6,7 +6,7 @@ return array(
 					"enabled"=>true,
 					"keys"=>[
 							"id"=>"6450957648373b213ee9",
-							"secret"=>"dd68111837d997109fb7955a0d0092745484a33c"
+							"secret"=>"6283519f708ceea8731c99e98cb54db4081f2c8e"
 							]
 					]
 			],

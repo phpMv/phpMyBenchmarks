@@ -4,7 +4,7 @@
 		"phpmv/ubiquity" : "dev-master",
 		"phpmv/php-mv-ui" : "^2.4",
 		"phpmv/ubiquity-attributes": "^0.0.13",
-		"phpmv/ubiquity-oauth": "^0.0.2"
+		"phpmv/ubiquity-oauth": "^0.0"
 	},
 	"autoload" : {
 		"psr-4" : {

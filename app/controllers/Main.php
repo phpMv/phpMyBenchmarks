@@ -58,7 +58,7 @@ class Main extends ControllerBase{
 	public function benchmark($id=null){
 		if(isset($id)){
 			if($id!=="session")
-				$benchmark=DAO::getOne(Benchmark::class, $id,true);
+				$benchmark=DAO::getById(Benchmark::class, $id,true);
 			else{
 				$benchmark=$_SESSION["benchmark"];
 			}
@@ -89,8 +89,9 @@ class Main extends ControllerBase{
 		}
 		$bts=$this->semantic->htmlButtonGroups("btsTests",[$runCaption,"Close"]);
 		$bts->addClass("fluid");
-		$bts->getElement(0)->onClick("var form=getNextForm('form.toSubmit');if(form!=false) form.form('submit');")->addClass("teal")->addIcon("lightning");
-		$btAdd=$this->semantic->htmlButton("addTest","Add test case");
+		$bts->getElement(0)->onClick("let form=getNextForm('form.toSubmit');if(form!=false) form.form('submit');")->addClass("teal")->addIcon("lightning");
+		$bts->getElement(1)->getOnClick('','#main-container',["attr"=>"","hasLoader"=>'internal']);
+        $btAdd=$this->semantic->htmlButton("addTest","Add test case");
 		$btAdd->addIcon("plus");
 		$btAdd->getOnClick("Main/addFormTestCase","#forms",["jqueryDone"=>"append","hasLoader"=>false]);
 		$this->jquery->exec("setAceEditor('preparation');",true);
@@ -227,19 +228,21 @@ class Main extends ControllerBase{
 	}
 
 	public function star($idBenchmark){
-		DAO::$db->execute("INSERT INTO benchstar(idBenchmark,idUser) VALUES(".$idBenchmark.",".UserAuth::getUser()->getId().");");
+        $db=DAO::getDatabase();
+		$db->execute("INSERT INTO benchstar(idBenchmark,idUser) VALUES(".$idBenchmark.",".UserAuth::getUser()->getId().");");
 		echo GUI::starButton($this->jquery, $idBenchmark);
 		echo $this->jquery->compile($this->view);
 	}
 
 	public function unstar($idBenchmark){
-		DAO::$db->execute("DELETE FROM benchstar WHERE idBenchmark=".$idBenchmark." AND idUser=".UserAuth::getUser()->getId().";");
+		$db=DAO::getDatabase();
+        $db->execute("DELETE FROM benchstar WHERE idBenchmark=".$idBenchmark." AND idUser=".UserAuth::getUser()->getId().";");
 		echo GUI::starButton($this->jquery, $idBenchmark);
 		echo $this->jquery->compile($this->view);
 	}
 
 	public function fork($idBenchmark){
-		$benchmark=DAO::getOne("models\Benchmark", $idBenchmark);
+		$benchmark=DAO::getById(Benchmark::class, $idBenchmark);
 		$tests=DAO::getOneToMany($benchmark, "testcases");
 		$user=UserAuth::getUser();
 		$benchmark->setUser($user);
