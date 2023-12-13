@@ -61,5 +61,6 @@ return array(
 	"style"=>"",
 	"oauth-providers"=>[
 			"GitHub"=>false
-			]
+			],
+	"activeDb"=>"default"
 	);

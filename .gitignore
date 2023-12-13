@@ -9,3 +9,4 @@ oauth.log
 app/config/config.php
 app/config/oauth.php
 .idea/
+server/

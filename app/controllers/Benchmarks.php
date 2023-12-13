@@ -86,7 +86,7 @@ class Benchmarks extends ControllerBase{
 	}
 
 	public function benchmarksCat($idDomain,$my=""){
-		$domaine=DAO::getOne("models\Domain", $idDomain);
+		$domaine=DAO::getById(Domain::class, $idDomain);
 		$bt=$this->semantic->htmlButton("return","Close");
 		$bt->addIcon("close");
 		$title=$domaine->getName();
@@ -118,9 +118,9 @@ class Benchmarks extends ControllerBase{
 	}
 
 	public function delete($ids){
-		$instance=DAO::getOne("models\Benchmark",$ids);
+		$instance=DAO::getById(Benchmark::class,$ids);
 		$instanceString=$instance."";
-			if(sizeof($_POST)>0){
+			if(count($_POST)>0){
 				if(DAO::remove($instance)){
 					$message=$this->showSimpleMessage("Suppression de `".$instanceString."`", "info","info",4000);
 					$this->jquery->exec("$('tr[data-ajax={$ids}]').remove();",true);
@@ -136,7 +136,7 @@ class Benchmarks extends ControllerBase{
 
 	public function seeOne($idBenchmark){
 		$user=UserAuth::getUser();
-		$benchmark=DAO::getOne("models\Benchmark", $idBenchmark);
+		$benchmark=DAO::getById(Benchmark::class, $idBenchmark);
 		GUI::getBenchmarkTop($this->jquery,$benchmark,$user);
 
 
@@ -192,7 +192,7 @@ class Benchmarks extends ControllerBase{
 	}
 
 	public function deleteResult($id){
-		$execution=DAO::getOne("models\Execution", $id);
+		$execution=DAO::getById(Execution::class, $id);
 		if($execution!=null){
 			DAO::remove($execution);
 			echo GUI::showSimpleMessage($this->jquery, "Result deleted", "info","info circle",5000);
@@ -202,7 +202,7 @@ class Benchmarks extends ControllerBase{
 	}
 
 	public function seeExecutionResults($idExecution){
-		$execution=DAO::getOne("models\Execution", $idExecution);
+		$execution=DAO::getById(Execution::class, $idExecution);
 		$results=DAO::getOneToMany($execution, "results");
 		foreach ($results as $result){
 			$testId=$result->getTestcase()->getId();
@@ -214,7 +214,7 @@ class Benchmarks extends ControllerBase{
 	}
 
 	public function seeResult($idResult,$idTest){
-		$result=DAO::getOne("models\Result", $idResult);
+		$result=DAO::getById(Result::class, $idResult);
 		GUI::showMessage($this->jquery,null,$result->getStatus(),"lbl-".$result->getId());
 		if($result->getStatus()!=="error"){
 			$time=Models::getTime($result->getTimer());
@@ -234,7 +234,7 @@ class Benchmarks extends ControllerBase{
 	}
 
 	public function seeChart($idExecution){
-		$execution=DAO::getOne("models\Execution", $idExecution);
+		$execution=DAO::getById(Execution::class, $idExecution);
 		$results=DAO::getOneToMany($execution, "results");
 		$this->jquery->exec("drawChart('".$execution->getUid()."',".Models::getChartResults($results,true).",'graph');",true);
 		echo $this->jquery->compile();
@@ -247,7 +247,7 @@ class Benchmarks extends ControllerBase{
 		$_SESSION["execution"]=$execution;
 		$testsIds=Models::getTestIds($benchmark);
 		$_SESSION["testsIds"]=$testsIds;
-		if(\sizeof($testsIds)>0){
+		if(\count($testsIds)>0){
 			$this->jquery->get("Benchmarks/runTest/".$testsIds[0],"#result-".$testsIds[0]);
 		}
 		echo $this->jquery->compile();
@@ -274,7 +274,7 @@ class Benchmarks extends ControllerBase{
 		$responses=$serverExchange->send($action, $content, $params);
 		GUI::displayRunningMessages($this->jquery, $bench, $execution, $test,$responses, $id);
 		\array_shift($_SESSION["testsIds"]);
-		if(\sizeof($_SESSION["testsIds"])>0){
+		if(\count($_SESSION["testsIds"])>0){
 			$testsIds=$_SESSION["testsIds"];
 			$this->jquery->get("Benchmarks/runTest/".$testsIds[0],"#result-".$testsIds[0]);
 		}else{
@@ -292,7 +292,7 @@ class Benchmarks extends ControllerBase{
 		$index=1;
 		foreach ($results as $result){
 			$result->setNote($index++);
-            $result->setUid(\md5(\microtime()));
+            $result->setUid($execution->getUid());
             $result->setExecution($execution);
 			$result->setPhpVersion(Models::getTestPhpVersion($benchmark, $result->getTestcase()));
 			DAO::insert($result);
@@ -303,7 +303,7 @@ class Benchmarks extends ControllerBase{
 	}
 
 	public function stars($idBenchmark){
-		$benchmark=DAO::getOne("models\Benchmark", $idBenchmark);
+		$benchmark=DAO::getById(Benchmark::class, $idBenchmark);
 		echo GUI::getBenchmarkTop($this->jquery, $benchmark,UserAuth::getUser());
 		echo $this->semantic->htmlHeader("",2,"Stargazers");
 		$userstars=DAO::getManyToMany($benchmark, "userstars");

@@ -62,8 +62,8 @@ class Benchmark{
 	private $analysis;
 
 	
-	#[Column(name: "domains",dbType: "varchar(100)")]
-	#[Validator(type: "length",constraints: ["max"=>"100","notNull"=>true])]
+	#[Column(name: "domains", nullable: true, dbType: "varchar(100)")]
+	#[Validator(type: "length",constraints: ["max"=>"100","notNull"=>false])]
 	private $domains;
 
 	
@@ -316,14 +316,6 @@ class Benchmark{
 
     public function getDomains() {
         return $this->domains;
-    }
-
-    public function getDomainIds() {
-        $result=[];
-        foreach ($this->domains as $domain){
-            $result[]=$domain->getId();
-        }
-        return implode(",", $result);
     }
 
     public function setDomains($domains) {
