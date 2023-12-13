@@ -241,7 +241,7 @@ class Benchmarks extends ControllerBase{
 	}
 
 	public function run($idBenchmark){
-		$benchmark=DAO::getOne("models\Benchmark", $idBenchmark);
+		$benchmark=DAO::getById(Benchmark::class, $idBenchmark);
 		DAO::getOneToMany($benchmark, "testcases");
 		$execution=$benchmark->addExecution(\md5(\microtime(true)));
 		$_SESSION["execution"]=$execution;
@@ -256,7 +256,7 @@ class Benchmarks extends ControllerBase{
 	public function runTest($id){
 		$isWin=\strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
 		$prefix=($isWin)?"":ROOT.DS."..".DS."server".DS;
-		$test=DAO::getOne("models\Testcase", $id);
+		$test=DAO::getById(Testcase::class, $id);
 		$bench=$test->getBenchmark();
 		$execution=$_SESSION["execution"];
 		$id=$test->getId();
