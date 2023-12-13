@@ -51,6 +51,8 @@ class Models {
 		$result->setStatus($status);
 		$result->setTestcase($testcase);
 		$execution->addResult($result);
+        $result->setExecution($execution);
+        $result->setUid($execution->getUid());
 		return $result;
 	}
 

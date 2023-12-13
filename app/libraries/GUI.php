@@ -120,7 +120,7 @@ class GUI {
 	public static function getBenchmarkName(JsUtils $jquery,Benchmark $benchmark,$recursive=true){
 		$name=Models::getBenchmarkName($benchmark,$recursive);
 		$header=$jquery->semantic()->htmlHeader("h-name",4);
-		if(\sizeof($name)>1){
+		if(\count($name)>1){
 			$header->asTitle($name[0],"forked from <a href='#'>".$name[1]."</a>");
 			$jquery->getOnClick("#subheader-h-name a", "benchmarks/seeOne/".$benchmark->getIdFork(),"#main-container",["ajaxTransition"=>"random"]);
 		}

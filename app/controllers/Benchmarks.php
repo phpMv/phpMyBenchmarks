@@ -306,7 +306,7 @@ class Benchmarks extends ControllerBase{
 		$benchmark=DAO::getById(Benchmark::class, $idBenchmark);
 		echo GUI::getBenchmarkTop($this->jquery, $benchmark,UserAuth::getUser());
 		echo $this->semantic->htmlHeader("",2,"Stargazers");
-		$userstars=DAO::getManyToMany($benchmark, "userstars");
+		$userstars=DAO::getManyToMany($benchmark, "users");
 		$list=$this->semantic->htmlCardGroups("list-user-stars");
 		$list->fromDatabaseObjects($userstars, function($user) use ($list){
 			$image=$user->getAvatar();
