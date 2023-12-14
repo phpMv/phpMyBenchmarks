@@ -2,6 +2,7 @@
 
 namespace libraries;
 
+use models\Authprovider;
 use models\Benchmark;
 use models\Testcase;
 use models\Result;
@@ -96,7 +97,7 @@ class Models {
 
 	public static function getUserName($user){
 		$result=$user->getLogin();
-		if($user->getAuthProvider()!=null)
+		if($user->getAuthProvider() instanceof Authprovider)
 			$result.="@".$user->getAuthProvider()->getName();
 		return $result;
 	}
