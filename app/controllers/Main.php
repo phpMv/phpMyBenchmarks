@@ -140,7 +140,7 @@ class Main extends ControllerBase{
 		$form->setFields(["name","phpVersion\n","code"]);
 		$this->jquery->exec("setAceEditor('".$formId."-code-0');",true);
 		$form->setSubmitParams("Main/send/".$id,"#response-".$formId,["params"=>
-				"{'bench-phpVersion':$(\"[name='bench-phpVersion']\").val(),'domains':$('#domains').val(),'bench-name':$('#bench-name').val(),'bench-description':$('#bench-description').val(),'preparation':ace.edit('preparation').getValue(),'code':ace.edit('".$formId."-code-0').getValue(),'iterations':$('#iterations').val()}"]);
+				"{'bench-phpVersion':$(\"[name='bench-phpVersion']\").val(),'domains':$(\"[name='domains']\").val(),'bench-name':$('#bench-name').val(),'bench-description':$('#bench-description').val(),'preparation':ace.edit('preparation').getValue(),'code':ace.edit('".$formId."-code-0').getValue(),'iterations':$('#iterations').val()}"]);
 		$form->fieldAsElement("code","div","ui segment editor");
 		$form->fieldAsDropDown(1,Models::$PHP_VERSIONS,false);
 		$btDelete=$this->semantic->htmlButton("delete-".$formId,"Delete test case","fluid");
