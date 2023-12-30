@@ -21,11 +21,10 @@ class Nol extends ControllerBase{
 			$header=new HtmlHeader("header");
 			$header->asImage("img/benchmarks.png", "phpMyBenchmarks.net","Benchmark and improve your php code to get better performances");
 			$buttons=GUI::getJumboButtons();
-
 			$headerMessage=$this->semantic->htmlMessage("jumbotron",[$header,$buttons]);
 			$headerMessage->setDismissable(true);
 			$headerMessage->setCloseTransition("{animation : 'fade', duration : '1s', onComplete : function() { ".$this->jquery->getDeferred("Main/jumbotron","#menu-jumbotron")."}}");
-		}else{
+        }else{
 			if(isset($_SESSION["jumbotron"]) && $_SESSION["jumbotron"]){
 				$this->jquery->get("Main/jumbotron","#menu-jumbotron");
 			}else{
@@ -63,6 +62,7 @@ class Nol extends ControllerBase{
 		$segment=$this->semantic->htmlSegment("tmp-bench");
 		$bt=new HtmlButton("btUpdate","Update");
 		$bt->addLabel(Models::getBenchmarkName($benchmark),true,"edit");
+        $this->setStyle($bt);
 		$bt->getOnClick('Main/benchmark/session',"#main-container",['hasLoader'=>'internal']);
 		$segment->setContent(['Last benchmark&nbsp;'.$saved,$bt]);
 		if(!UserAuth::isAuth()){

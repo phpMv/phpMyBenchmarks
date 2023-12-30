@@ -1,5 +1,6 @@
 <?php
 namespace controllers;
+use libraries\MySettings;
 use Ubiquity\orm\DAO;
 use Ajax\semantic\html\elements\HtmlLabel;
 use libraries\Models;
@@ -26,9 +27,10 @@ class Benchmarks extends ControllerBase{
 
 	public function index(){}
 
-	public function initialize(){
-		$this->semantic=$this->jquery->semantic();
-	}
+    public function initialize()
+    {
+        $this->initializeAll();
+    }
 
 	public function finalize(){
 	}
@@ -139,16 +141,16 @@ class Benchmarks extends ControllerBase{
 		$benchmark=DAO::getById(Benchmark::class, $idBenchmark);
 		GUI::getBenchmarkTop($this->jquery,$benchmark,$user);
 
-
+        $aceTheme=$this->settings['aceTheme'];
 
 		$header1=$this->semantic->htmlHeader("header1",3,"Code");
 		$header1->addIcon("code");
 		$tests=DAO::getOneToMany($benchmark, "testcases");
-		$this->jquery->exec("setAceEditor('preparation',true);",true);
+		$this->jquery->exec("setAceEditor('preparation',true,'$aceTheme');",true);
 		$testsView="";
 		foreach ($tests as $test){
 			$testsView.=$this->loadView("benchmarks/seeOneTest.html",["id"=>$test->getId(),"name"=>$test->getName(),"code"=>$test->getCode()],true);
-			$this->jquery->exec("setAceEditor('code-".$test->getId()."',true);",true);
+			$this->jquery->exec("setAceEditor('code-".$test->getId()."',true,'$aceTheme');",true);
 		}
 
 		$header2=$this->semantic->htmlHeader("header2",3,"Executions");

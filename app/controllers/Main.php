@@ -1,17 +1,14 @@
 <?php
 namespace controllers;
+use libraries\MySettings;
 use libraries\ServerExchange;
-use Ubiquity\controllers\Controller;
 use models\Testcase;
-use Ajax\Semantic;
-use Ajax\semantic\html\elements\HtmlButton;
 use Ubiquity\orm\DAO;
 use models\Benchmark;
 use libraries\Models;
 use libraries\UserAuth;
 use Ajax\semantic\html\elements\HtmlButtonGroups;
 use libraries\GUI;
-use Ajax\service\JArray;
 use models\Domain;
 use Ubiquity\utils\models\UArrayModels;
 
@@ -56,6 +53,7 @@ class Main extends ControllerBase{
 	}
 
 	public function benchmark($id=null){
+        $aceTheme=MySettings::getAceTheme();
 		if(isset($id)){
 			if($id!=="session")
 				$benchmark=DAO::getById(Benchmark::class, $id,true);
@@ -77,7 +75,7 @@ class Main extends ControllerBase{
 		$input->getDataField()->setProperty("max", "1000000");
 		$fields->addDropdown("bench-phpVersion",Models::$PHP_VERSIONS,"php version",$benchmark->getPhpVersion());
 		$fields->addDropdown("domains",UArrayModels::asKeyValues(DAO::getAll(Domain::class,'',false),"getId","getName"),"Domains",$benchmark->getDomains(),true);
-		$prepForm->addElement("preparation",$benchmark->getBeforeAll(),"Preparation","div","ui segment editor");
+		$prepForm->addElement("preparation",$benchmark->getBeforeAll(),"Preparation","div","code editor");
 		$forms="";
 		foreach ($benchmark->getTestcases() as $testcase){
 			$forms.=$this->addFormTestCase($testcase,true);
@@ -94,7 +92,7 @@ class Main extends ControllerBase{
         $btAdd=$this->semantic->htmlButton("addTest","Add test case");
 		$btAdd->addIcon("plus");
 		$btAdd->getOnClick("Main/addFormTestCase","#forms",["jqueryDone"=>"append","hasLoader"=>false]);
-		$this->jquery->exec("setAceEditor('preparation');",true);
+		$this->jquery->exec("setAceEditor('preparation',false,'$aceTheme');",true);
 		$this->jquery->exec("google.charts.load('current', {'packages':['corechart']});",true);
 		$this->jquery->exec("$('.ui.accordion').accordion({'exclusive': false});",true);
 		$this->jquery->compile($this->view);
@@ -133,20 +131,21 @@ class Main extends ControllerBase{
 	}
 
 	private function getForm(Testcase $testcase){
+        $aceTheme=MySettings::getAceTheme();
 		$id=$testcase->form;
 		$formId="form".$id;
 		$form=$this->semantic->dataForm($formId, $testcase);
 		$form->addClass("test toSubmit");
 		$form->setFields(["name","phpVersion\n","code"]);
-		$this->jquery->exec("setAceEditor('".$formId."-code-0');",true);
+		$this->jquery->exec("setAceEditor('".$formId."-code-0',false,'$aceTheme');",true);
 		$form->setSubmitParams("Main/send/".$id,"#response-".$formId,["params"=>
 				"{'bench-phpVersion':$(\"[name='bench-phpVersion']\").val(),'domains':$(\"[name='domains']\").val(),'bench-name':$('#bench-name').val(),'bench-description':$('#bench-description').val(),'preparation':ace.edit('preparation').getValue(),'code':ace.edit('".$formId."-code-0').getValue(),'iterations':$('#iterations').val()}"]);
-		$form->fieldAsElement("code","div","ui segment editor");
+		$form->fieldAsElement("code","div","code editor");
 		$form->fieldAsDropDown(1,Models::$PHP_VERSIONS,false);
 		$btDelete=$this->semantic->htmlButton("delete-".$formId,"Delete test case","fluid");
 		$btDelete->setProperty("data-ajax", $id);
 		$btDelete->addIcon("remove circle",true,true);
-		$btDelete->getOnClick('Main/removeTest',"#info",["attr"=>"data-ajax"]);
+		$btDelete->getOnClick('Main/removeTest',"#info",["attr"=>"data-ajax",'hasLoader'=>'internal']);
 	}
 
 	public function send($id){

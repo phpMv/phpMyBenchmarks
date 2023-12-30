@@ -1,9 +1,15 @@
 <?php
 namespace controllers;
+use Ajax\common\Widget;
+use Ajax\php\ubiquity\JsUtils;
 use Ajax\Semantic;
-use Ajax\JsUtils;
+use Ajax\semantic\html\base\HtmlSemCollection;
+use Ajax\semantic\html\base\HtmlSemDoubleElement;
+use libraries\GUI;
+use libraries\MySettings;
 use libraries\UserAuth;
 use Ubiquity\controllers\Controller;
+use Ubiquity\controllers\Startup;
 use Ubiquity\utils\http\URequest;
  /**
  * ControllerBase
@@ -16,14 +22,37 @@ abstract class ControllerBase extends Controller{
 	 */
 	protected $semantic;
 
+    protected $settings;
+
+    protected $style;
+
 	/**
 	 * @var boolean
 	 */
 	public $forwarded;
 
+    protected function initializeAll(){
+        $this->semantic=$this->jquery->semantic();
+        $this->settings=MySettings::getSettings();
+        $this->style=MySettings::getStyle();
+        $this->semantic->setInverted($this->style);
+        $this->view->setVar("style",$this->style);
+        GUI::$style=$this->style;
+        if($this->style==='inverted'){
+            $this->jquery->setAjaxLoader('<div class="ui active dimmer"><div class="ui text loader">Loading</div></div>');
+        }
+        $this->view->setVar("bg",MySettings::getBgColor());
+    }
+
+    protected function setStyle(HtmlSemDoubleElement|HtmlSemCollection|Widget $element){
+        if($this->style==='inverted'){
+           $element->setInverted(true);
+        }
+    }
+
 	public function initialize(){
-		$this->semantic=$this->jquery->semantic();
-		if(!URequest::isAjax() && !$this->forwarded){
+        $this->initializeAll();
+        if(!URequest::isAjax() && !$this->forwarded){
 			$this->loadView("main/vHeader.html",["infoUser"=>UserAuth::getInfoUser($this->jquery,true)]);
 		}
 	}

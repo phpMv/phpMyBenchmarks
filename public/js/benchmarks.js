@@ -5,10 +5,11 @@ const getNextForm = function (identifier) {
 	return false;
 };
 
-const setAceEditor = function (elementId, readOnly) {
+const setAceEditor = function (elementId, readOnly,aceTheme) {
 	readOnly = readOnly || false;
+	aceTheme = aceTheme || 'solarized_dark';
 	const editor = ace.edit(elementId);
-	editor.setTheme("ace/theme/solarized_dark");
+	editor.setTheme("ace/theme/"+aceTheme);
 	editor.getSession().setMode({path: "ace/mode/php", inline: true});
 	editor.setOptions({
 		maxLines: 10,

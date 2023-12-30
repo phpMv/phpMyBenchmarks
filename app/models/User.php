@@ -62,6 +62,9 @@ class User{
 	#[JoinTable(name: "benchstar")]
 	private $benchstars;
 
+    #[Column(name: "settings", nullable: false, dbType: "text")]
+    private $settings='[]';
+
 
 	 public function __construct(){
 		$this->benchmarks = [];
@@ -173,5 +176,23 @@ class User{
 	 public function __toString(){
 		return ($this->avatar??'no value').'';
 	}
+
+    /**
+     * @param string $settings
+     */
+    public function setSettings(string $settings): void {
+        $this->settings = $settings;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSettings() {
+        return $this->settings;
+    }
+
+    public function getSettings_() {
+        return json_decode($this->settings,true);
+    }
 
 }

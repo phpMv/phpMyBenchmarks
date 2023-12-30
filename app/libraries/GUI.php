@@ -2,13 +2,13 @@
 
 namespace libraries;
 
+use Ajax\common\Widget;
 use Ajax\JsUtils;
+use Ajax\semantic\html\base\HtmlSemCollection;
 use Ajax\semantic\html\elements\HtmlButton;
 use models\Benchmark;
 use models\Execution;
 use models\Testcase;
-use models\User;
-use Ajax\Semantic;
 use Ajax\semantic\html\elements\HtmlButtonGroups;
 use Ajax\semantic\html\collections\HtmlMessage;
 use Ajax\semantic\html\elements\HtmlLabel;
@@ -23,6 +23,14 @@ class GUI {
 	const ICONS=["output"=>"history","success"=>"checkmark box","info"=>"info circle","warning"=>"warning circle","error"=>"announcement"];
 	const COLORS=["output"=>"","success"=>"green","info"=>"blue","warning"=>"orange","error"=>"red"];
 
+    public static $style='';
+
+    public static function setStyle(HtmlSemDoubleElement|HtmlSemCollection|Widget $element){
+        if(self::$style==='inverted'){
+            $element->setInverted(true);
+        }
+    }
+
 	public static function showSimpleMessage(JsUtils $jquery,$content,$type,$icon="info circle",$timeout=NULL){
 		$semantic=$jquery->semantic();
 		$message=$semantic->htmlMessage("msg-".rand(0,50),$content,$type);
@@ -30,6 +38,7 @@ class GUI {
 		$message->setDismissable();
 		if(isset($timeout))
 			$message->setTimeout(3000);
+        self::setStyle($message);
 		return $message;
 	}
 
@@ -172,6 +181,7 @@ class GUI {
 		$buttons->getElement(1)->setProperty("data-ajax", "Benchmarks/allTab");
 
 		self::getButtons($buttons,$inJumbotron);
+        self::setStyle($buttons);
 		$buttons->getOnClick('','#main-container',['attr'=>'data-ajax','hasLoader'=>'internal']);
 		return $buttons;
 	}
@@ -263,7 +273,6 @@ class GUI {
 
 		$deBenchs->setUrls(["refresh"=>$jsonUrl,"edit"=>"Main/benchmark","delete"=>"Benchmarks/delete"]);
 		$deBenchs->setTargetSelector(["edit"=>"#main-container","delete"=>"#info"]);
-
 		$jquery->getOnClick('.see', 'Benchmarks/seeOne','#main-container',['attr'=>'data-ajax','hasLoader'=>'internal']);
 		$jquery->getOnClick('.fork', 'Main/fork','#main-container',['attr'=>'data-ajax','hasLoader'=>'internal']);
 		return $deBenchs;
@@ -345,4 +354,5 @@ class GUI {
 		else
 			$list->addItem(["header"=>$result->getTestcase()->getName(),"description"=>$tag." ".Models::getTime($result->getTimer())]);
 	}
+
 }

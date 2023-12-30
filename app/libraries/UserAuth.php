@@ -26,6 +26,10 @@ class UserAuth {
 		return null!==self::getUser();
 	}
 
+    public static function setUser($user){
+        USession::set("user",$user);
+    }
+
 	public static function getInfoUser(JsUtils $jquery,$asItem=true){
 		$user=self::getUser();
 		\ob_start();
@@ -40,17 +44,23 @@ class UserAuth {
 			$dd->addItem("My benchmarks")->setProperty("data-ajax", "Benchmarks/myTab");
 			$dd->addItem("All benchmarks")->setProperty("data-ajax", "Benchmarks/allTab");
 			$dd->addDividerItem();
-			$dd->addItem("Sign out")->setProperty("data-ajax", "Auth/disconnect");
+			$dd->addItem("Settings")->setProperty("data-ajax", "Auth/settings");;
+            $dd->addDividerItem();
+            $dd->addItem("Sign out")->setProperty("data-ajax", "Auth/disconnect");
 			$dd->getOnClick("","#main-container",["attr"=>"data-ajax","ajaxTransition"=>"random"]);
 			if($asItem)
 				$dd->wrap('<div class="item">','</div>');
+            GUI::setStyle($dd);
 			echo $dd->compile($jquery);
 		}else{
-			$buttons=$jquery->semantic()->htmlButtonGroups("buttons",["Sign in","Sign up"]);
+			$buttons=$jquery->semantic()->htmlButtonGroups("buttons",["Sign in","Sign up",""]);
 			$buttons->getElement(0)->asLink()->addIcon("sign in");
 			$buttons->getElement(1)->setColor("teal")->addIcon("user add");
-			$buttons->setPropertyValues("data-ajax", ["Auth/signin","Auth/signup"]);
-			$buttons->getOnClick("","#main-container",["attr"=>"data-ajax"]);
+            $iconTheme=MySettings::getTheme()==='light'?'moon':'sun';
+            $buttons->getElement(2)->setIdentifier('idTheme')->asIcon($iconTheme);
+			$buttons->setPropertyValues("data-ajax", ["Auth/signin","Auth/signup","Auth/toggleTheme"]);
+            GUI::setStyle($buttons);
+			$buttons->getOnClick("","#main-container",["attr"=>"data-ajax",'hasLoader'=>'internal']);
 			if($asItem)
 				$buttons->wrap('<div class="item">','</div>');
 			echo $buttons->compile($jquery);

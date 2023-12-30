@@ -1,10 +1,10 @@
 <div class="ui container">
 {{ q["top-benchmark"] | raw }}
-	<div class="ui accordion">
+	<div class="ui accordion {{style}}">
 		<div class="active title">{{ q["header1"] | raw }}</div>
 		<div class="active content">
 			<h4>{{benchmark.getName()}}</h4>
-			<div class="ui segment editor" id="preparation">{{benchmark.getBeforeAll()}}</div>
+			<div class="code editor" id="preparation">{{benchmark.getBeforeAll()}}</div>
 			<div class="ui segment">
 			{{ tests | raw }}
 			</div>
