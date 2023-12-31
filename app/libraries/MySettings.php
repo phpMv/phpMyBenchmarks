@@ -7,9 +7,9 @@ use Ubiquity\utils\http\UCookie;
 
 class MySettings {
 
-    private static $default='["aceTheme": "Solarized Dark","theme": "light","bgColor":"automatic]';
+    private static $default='["aceTheme": "github","theme": "light","bgColor":"automatic]';
 
-    private static $defaultValues=['dark'=>['bgColor'=>'#2d2d30','aceTheme'=>'solarized_dark','style'=>'inverted'],'light'=>['bgColor'=>'#ffffff','aceTheme'=>'solarized_light','style'=>'']];
+    private static $defaultValues=['dark'=>['bgColor'=>'#2d2d30','aceTheme'=>'terminal','style'=>'inverted'],'light'=>['bgColor'=>'#ffffff','aceTheme'=>'github','style'=>'']];
 
     public static function getInitialSettings() {
         if(UserAuth::isAuth()){

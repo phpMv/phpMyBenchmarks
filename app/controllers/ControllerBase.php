@@ -35,8 +35,14 @@ abstract class ControllerBase extends Controller{
         $this->semantic=$this->jquery->semantic();
         $this->settings=MySettings::getSettings();
         $this->style=MySettings::getStyle();
-        $this->semantic->setInverted($this->style);
         $this->view->setVar("style",$this->style);
+        if($this->style==='inverted') {
+            $this->jquery->setParam('beforeCompileHtml', function ($elm) {
+                if (\method_exists($elm, 'setInverted')) {
+                    $elm->setInverted(false);
+                }
+            });
+        }
         GUI::$style=$this->style;
         if($this->style==='inverted'){
             $this->jquery->setAjaxLoader('<div class="ui active dimmer"><div class="ui text loader">Loading</div></div>');

@@ -3,9 +3,9 @@
 	<div class="ui accordion {{style}}">
 		<div class="active title">{{ q["header1"] | raw }}</div>
 		<div class="active content">
-			<h4>{{benchmark.getName()}}</h4>
+			<h4 class="ui {{style}} header">{{benchmark.getName()}}</h4>
 			<div class="code editor" id="preparation">{{benchmark.getBeforeAll()}}</div>
-			<div class="ui segment">
+			<div class="ui {{style}} segment">
 			{{ tests | raw }}
 			</div>
 		</div>

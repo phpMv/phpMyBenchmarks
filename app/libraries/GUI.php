@@ -63,6 +63,7 @@ class GUI {
 			if(isset($content) && $content!==""){
 				$msg->addPopup($style,$content);
 			}
+            self::setStyle($msg);
 			echo $msg->compile($jquery);
 		}
 	}
@@ -246,7 +247,7 @@ class GUI {
 		$deBenchs->setValueFunction("name", function($name,$bench) use($jquery){
 			$elm=new HtmlSemDoubleElement("name-".$bench->getId(),"div");
 			$lbl=self::getPhpVersion($bench->getPhpVersion());
-			$elm->setContent($name.$lbl);
+			$elm->setContent([$name,' ',$lbl]);
 			$elm->addPopupHtml(GUI::getBenchmarkName($jquery, $bench),NULL,["setFluidWidth"=>true,"on"=>"click"]);
 			return $elm;
 		});
@@ -266,9 +267,11 @@ class GUI {
 				$fork->addClass("fork")->asIcon("fork");
 				else
 					$fork->wrap("<!--","-->");
+                self::setStyle($fork);
 		});
 		$deBenchs->insertInFieldButton(5, "",true,function($see){
 			$see->addClass("see")->asIcon("unhide");
+            self::setStyle($see);
 		});
 
 		$deBenchs->setUrls(["refresh"=>$jsonUrl,"edit"=>"Main/benchmark","delete"=>"Benchmarks/delete"]);
@@ -284,7 +287,6 @@ class GUI {
 		if(isset($phpVersion) &&(!$testcase || $phpVersion!==Models::$DEFAULT_PHP_VERSION)){
 			$lbl=new HtmlLabel("",Models::$PHP_VERSIONS[$phpVersion]);
 			$lbl->setSize("mini");
-			$lbl=" ".$lbl;
 		}
 		return $lbl;
 	}
