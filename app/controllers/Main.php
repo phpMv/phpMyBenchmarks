@@ -95,8 +95,8 @@ class Main extends ControllerBase{
 		$this->jquery->exec("setAceEditor('preparation',false,'$aceTheme');",true);
 		$this->jquery->exec("google.charts.load('current', {'packages':['corechart']});",true);
 		$this->jquery->exec("$('.ui.accordion').accordion({'exclusive': false});",true);
-		$this->jquery->compile($this->view);
-		$this->loadView("main.html",["forms"=>$forms]);
+
+        $this->jquery->renderView("main.html",["forms"=>$forms]);
 	}
 	public function addFormTestCase($testcase=null,$asString=false){
 		if(!($testcase instanceof Testcase)){
@@ -105,10 +105,9 @@ class Main extends ControllerBase{
 		$testcase->form=$testcase->getId();
 		$id="form".$testcase->getId();
 		$this->getForm($testcase);
-		$this->jquery->compile($this->view);
 		if($asString===true)
-			return $this->loadView("testCase.html",["formName"=>$id],true);
-		$this->loadView("testCase.html",["formName"=>$id]);
+			return $this->jquery->renderView("testCase.html",["formName"=>$id],true);
+		$this->jquery->renderView("testCase.html",["formName"=>$id]);
 	}
 
 	public function removeTest($id){

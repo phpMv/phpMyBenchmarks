@@ -1,6 +1,7 @@
 <?php
 namespace controllers;
 use libraries\MySettings;
+use models\User;
 use Ubiquity\orm\DAO;
 use Ajax\semantic\html\elements\HtmlLabel;
 use libraries\Models;
@@ -36,34 +37,41 @@ class Benchmarks extends ControllerBase{
 	}
 
 	public function all(){
-		$benchmarks=DAO::getAll("models\Benchmark","1=1 ORDER BY createdAt DESC".$this->getLimitOffset(),true,true);
+		$benchmarks=DAO::getAll("models\Benchmark","1=1 ORDER BY createdAt DESC".$this->getLimitOffset());
 		GUI::displayBenchmarks($this->jquery,$this->view,$this,$benchmarks,null,"Benchmarks/all",DAO::count("models\Benchmark"));
 	}
 
+    private function allTabs($title,$param=null){
+        $tab=$this->semantic->htmlTab("allTabs");
+        $tab->addAndForwardTab($this->jquery, $title, $this, "controllers\\Benchmarks", "all");
+        $tab->addAndForwardTab($this->jquery, "By category", $this, "controllers\\Benchmarks", "domains",[$param]);
+        $this->jquery->renderView("benchmarks/allTabs.html");
+    }
+
 	public function allTab(){
-		$tab=$this->semantic->htmlTab("allTabs");
-		$tab->addAndForwardTab($this->jquery, "All benchmarks", $this, "controllers\\Benchmarks", "all");
-		$tab->addAndForwardTab($this->jquery, "By category", $this, "controllers\\Benchmarks", "domains");
-		$this->jquery->compile($this->view);
-		$this->loadView("benchmarks/allTabs.html");
+        $this->allTabs('All benchmarks');
 	}
 
 	public function myTab(){
-		$tab=$this->semantic->htmlTab("allTabs");
-		$tab->forwardTab(0, $this->jquery, "My benchmarks", $this, "controllers\Benchmarks", "my");
-		$tab->forwardTab(1, $this->jquery, "By category", $this, "controllers\Benchmarks", "domains",["my"]);
-		$this->jquery->compile($this->view);
-		$this->loadView("benchmarks/allTabs.html");
+        $this->allTabs('My benchmarks','my');
 	}
+
+    public function userTab($id){
+        $user=DAO::getById(User::class,$id,false);
+        if($user!==null){
+            $this->allTabs($user->getLogin()."'s benchmarks",$id);
+        }
+    }
 
 	public function domains($my=""){
 		$useMy=$my=="my" && UserAuth::isAuth();
 		$sqlMy="";
-		$user=null;
 		if($useMy){
 			$user=UserAuth::getUser();
 			$sqlMy=" AND idUser=".$user->getId();
-		}
+		}elseif (\ctype_digit($my)){
+            $sqlMy=" AND idUser=".$my;
+        }
 		$domains=DAO::getAll("models\Domain");
 		$list=$this->semantic->htmlList("listDomains");
 		$list->fromDatabaseObjects($domains, function($domain) use($sqlMy,$my){
@@ -100,7 +108,12 @@ class Benchmarks extends ControllerBase{
 			$user=UserAuth::getUser();
 			$where.=" AND idUser=".$user->getId();
 			$title="My benchmarks : ".$title;
-		}
+		}elseif (\ctype_digit($my)){
+            $user=DAO::getById(User::class,$my,false);
+            $name=$user->getLogin();
+            $where.=" AND idUser=".$user->getId();
+            $title="$name's benchmarks : ".$title;
+        }
 		$bt->addLabel($title,false);
 		$bt->onClick("$('#tabBenchmarks').hide();$('#listDomains').show();");
 		$benchmarks=DAO::getAll("models\Benchmark",$where." ORDER BY createdAt DESC".$this->getLimitOffset(),true,true);
@@ -108,15 +121,17 @@ class Benchmarks extends ControllerBase{
 	}
 
 	public function my(){
-		$benchmarks=DAO::getAll("models\Benchmark","idUser=".UserAuth::getUser()->getId()." ORDER BY createdAt DESC".$this->getLimitOffset(),true,true);
+		$benchmarks=DAO::getAll("models\Benchmark","idUser=".UserAuth::getUser()->getId()." ORDER BY createdAt DESC".$this->getLimitOffset());
 		GUI::displayBenchmarks($this->jquery,$this->view,$this,$benchmarks,null,"Benchmarks/my",DAO::count("models\Benchmark","idUser=".UserAuth::getUser()->getId()));
 	}
 
+    public function user(int $id){
+        $benchmarks=DAO::getAll("models\Benchmark","idUser=".$id." ORDER BY createdAt DESC".$this->getLimitOffset());
+        GUI::displayBenchmarks($this->jquery,$this->view,$this,$benchmarks,null,"Benchmarks/user/".$id,DAO::count("models\Benchmark","idUser=".$id));
+    }
+
 	private function getLimitOffset($count=10){
-		$p=1;
-		if(isset($_POST["p"])){
-			$p=$_POST['p'];
-		}
+		$p=$_POST['p']??1;
 		return " LIMIT ".(($p-1)*$count).",".$count;
 	}
 
@@ -164,8 +179,7 @@ class Benchmarks extends ControllerBase{
 		$this->jquery->exec("$('.ui.accordion').accordion({'exclusive': false});",true);
 		$this->jquery->exec("google.charts.load('current', {'packages':['corechart']});",true);
 
-		$this->jquery->compile($this->view);
-		$this->loadView("benchmarks/seeOne.html",["benchmark"=>$benchmark,"tests"=>$testsView]);
+		$this->jquery->renderView("benchmarks/seeOne.html",["benchmark"=>$benchmark,"tests"=>$testsView]);
 	}
 
 	public function listExecs($benchmark){
@@ -315,7 +329,9 @@ class Benchmarks extends ControllerBase{
 			$image=$user->getAvatar();
 			$image=($image!=null && $image!="")?$image:"img/male.png";
 			$card=$list->newItem("card-".$user->getId());
-			$card->addItemContent(Models::getUserName($user))->addImage($image,"","mini")->setFloated("left")->asAvatar();
+            $lbl=new HtmlLabel('',Models::getUserName($user));
+            $lbl->setBasic()->setProperty('data-ajax',$user->getId())->addClass('user-click');
+			$card->addItemContent($lbl)->addImage($image,"","mini")->setFloated("left")->asAvatar();
 			return $card;
 
 		});

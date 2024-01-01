@@ -41,8 +41,7 @@ class Nol extends ControllerBase{
 			if(UserAuth::isAuth() || $_SESSION["benchmark"]->getId()==null)
 				$this->getTmpBenchmark($_SESSION["benchmark"]);
 		}
-		$this->jquery->compile($this->view);
-		$this->loadView("main/index.html",["myBenchs"=>$myBenchs]);
+		$this->jquery->renderView("main/index.html",["myBenchs"=>$myBenchs]);
 	}
 	public function all(){
 		$benchmarks=DAO::getAll(Benchmark::class,"1=1 ORDER BY createdAt DESC".$this->getLimitOffset(),true,true);
@@ -61,7 +60,7 @@ class Nol extends ControllerBase{
 		}
 		$segment=$this->semantic->htmlSegment("tmp-bench");
 		$bt=new HtmlButton("btUpdate","Update");
-		$bt->addLabel(Models::getBenchmarkName($benchmark),true,"edit");
+		$bt->addLabel(Models::getBenchmarkName($benchmark,true,true),true,"edit");
         $this->setStyle($bt);
 		$bt->getOnClick('Main/benchmark/session',"#main-container",['hasLoader'=>'internal']);
 		$segment->setContent(['Last benchmark&nbsp;'.$saved,$bt]);

@@ -79,12 +79,16 @@ class Models {
 		return "[".\implode(",", $return)."]";
 	}
 
-	public static function getBenchmarkName(Benchmark $benchmark,$recursive=true){
+	public static function getBenchmarkName(Benchmark $benchmark,$recursive=true,$noLink=false){
 		$return=[];
 		$result=$benchmark->getName();
 		$user=$benchmark->getUser();
 		if($user instanceof User){
-			$result=$user->getLogin()."/".$result;
+            if($noLink){
+                $result = $user->getLogin() . "/" . $result;
+            }else {
+                $result = '<a href="#" class="user-click" data-ajax="' . $user->getId() . '">' . $user->getLogin() . "</a>/" . $result;
+            }
 		}
 		$return[]=$result;
 		if($benchmark->getIdFork()!=NULL && $recursive){
@@ -154,17 +158,17 @@ class Models {
 	}
 
 	public static function stared($benchmark){
-		if($benchmark instanceof Benchmark)
-			$id=$benchmark->getId();
-			else{
-				$id=$benchmark;
-			}
-		$where="idBenchmark=".$id;
-		if(UserAuth::isAuth()){
-			$where.=" AND idUser=".UserAuth::getUser()->getId();
-		}
-        $db=DAO::getDb(Benchmark::class);
-		return $db->count('benchstar',$where)==1;
+        if(UserAuth::isAuth()) {
+            if ($benchmark instanceof Benchmark)
+                $id = $benchmark->getId();
+            else {
+                $id = $benchmark;
+            }
+            $where = "idBenchmark=" . $id . " AND idUser=" . UserAuth::getUser()->getId();
+            $db = DAO::getDb(Benchmark::class);
+            return $db->count('benchstar', $where) == 1;
+        }
+        return false;
 	}
 
 	public static function save(Benchmark $benchmark){
