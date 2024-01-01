@@ -48,7 +48,7 @@ abstract class ControllerBase extends Controller{
             $this->jquery->setAjaxLoader('<div class="ui active dimmer"><div class="ui text loader">Loading</div></div>');
         }
         $this->view->setVar("bg",MySettings::getBgColor());
-        $this->jquery->getOnClick('.user-click','benchmarks/userTab/','#main-container',['attr'=>'data-ajax','hasLoader'=>false,'listenerOn'=>'body']);
+        $this->jquery->getOnClick('.user-click','Benchmarks/userTab/','#main-container',['attr'=>'data-ajax','hasLoader'=>false,'listenerOn'=>'body']);
     }
 
     protected function setStyle(HtmlSemDoubleElement|HtmlSemCollection|Widget $element){
