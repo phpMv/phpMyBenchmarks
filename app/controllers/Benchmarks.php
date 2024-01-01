@@ -82,6 +82,7 @@ class Benchmarks extends ControllerBase{
 		return $item;
 		});
 		$list->addClass("selection relaxed");
+        $this->setStyle($list);
 		echo $list;
 		echo '<div id="tabBenchmarks" style="display: none;"></div>';
 		echo $this->jquery->compile($this->view);
@@ -141,7 +142,7 @@ class Benchmarks extends ControllerBase{
 		$benchmark=DAO::getById(Benchmark::class, $idBenchmark);
 		GUI::getBenchmarkTop($this->jquery,$benchmark,$user);
 
-        $aceTheme=$this->settings['aceTheme'];
+        $aceTheme=MySettings::getAceTheme();
 
 		$header1=$this->semantic->htmlHeader("header1",3,"Code");
 		$header1->addIcon("code");
@@ -306,8 +307,8 @@ class Benchmarks extends ControllerBase{
 
 	public function stars($idBenchmark){
 		$benchmark=DAO::getById(Benchmark::class, $idBenchmark);
-		echo GUI::getBenchmarkTop($this->jquery, $benchmark,UserAuth::getUser());
-		echo $this->semantic->htmlHeader("",2,"Stargazers");
+		GUI::getBenchmarkTop($this->jquery, $benchmark,UserAuth::getUser());
+		$this->semantic->htmlHeader("bench-header",2,"Stargazers");
 		$userstars=DAO::getManyToMany($benchmark, "users");
 		$list=$this->semantic->htmlCardGroups("list-user-stars");
 		$list->fromDatabaseObjects($userstars, function($user) use ($list){
@@ -318,14 +319,13 @@ class Benchmarks extends ControllerBase{
 			return $card;
 
 		});
-		echo $list;
-		echo $this->jquery->compile($this->view);
+		$this->jquery->renderView('benchmarks/fork-stars.html');
 	}
 
 	public function forks($idBenchmark){
 		$benchmark=DAO::getOne("models\Benchmark", $idBenchmark);
-		echo GUI::getBenchmarkTop($this->jquery, $benchmark,UserAuth::getUser());
-		echo $this->semantic->htmlHeader("",2,"Forks");
+		GUI::getBenchmarkTop($this->jquery, $benchmark,UserAuth::getUser());
+		$this->semantic->htmlHeader("bench-header",2,"Forks");
 		$forks=DAO::getAll("models\Benchmark","idFork=".$idBenchmark);
 		$list=$this->semantic->htmlCardGroups("list-user-stars");
 		$list->fromDatabaseObjects($forks, function($bench) use ($list){
@@ -337,8 +337,7 @@ class Benchmarks extends ControllerBase{
 			return $card;
 
 		});
-		echo $list;
-		echo $this->jquery->compile($this->view);
+        $this->jquery->renderView('benchmarks/fork-stars.html');
 	}
 
 	private function showSimpleMessage($content,$type,$icon="info",$timeout=NULL){

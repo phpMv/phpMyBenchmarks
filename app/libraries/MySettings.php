@@ -9,7 +9,7 @@ class MySettings {
 
     private static $default='["aceTheme": "github","theme": "light","bgColor":"automatic]';
 
-    private static $defaultValues=['dark'=>['bgColor'=>'#2d2d30','aceTheme'=>'terminal','style'=>'inverted'],'light'=>['bgColor'=>'#ffffff','aceTheme'=>'github','style'=>'']];
+    private static $defaultValues=['dark'=>['bgColor'=>'#2d2d30','aceTheme'=>'terminal','style'=>'inverted'],'light'=>['bgColor'=>'#ffffff','aceTheme'=>'solarized_light','style'=>'']];
 
     public static function getInitialSettings() {
         if(UserAuth::isAuth()){
