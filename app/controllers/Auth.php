@@ -10,6 +10,7 @@ use Ajax\semantic\html\elements\HtmlButton;
 use Ajax\semantic\html\base\constants\Social;
 use libraries\GUI;
  use Ubiquity\utils\base\UArray;
+ use Ubiquity\utils\http\UCookie;
  use Ubiquity\utils\http\URequest;
 
  /**
@@ -44,6 +45,7 @@ class Auth extends ControllerBase{
 				if($user->getPassword()==@$_POST["password"]){
 					$_SESSION["user"]=$user;
                     MySettings::getInitialSettings();
+                    GUI::applySettings($this->jquery);
 					$header=$this->jquery->semantic()->htmlHeader("headerUser",3);
 					$header->asImage($user->getAvatar(), $user->getLogin(),"connected");
 					echo GUI::showSimpleMessage($this->jquery, $header, "info","");
@@ -150,9 +152,10 @@ class Auth extends ControllerBase{
 		$header->asImage($user->getAvatar(), $user->getLogin(),"Bye!");
 		$message=$this->semantic->htmlMessage("message",$header);
 		$message->setDismissable()->setTimeout(5000);
-        $this->setStyle($message);
 		echo $message->compile($this->jquery);
-		$this->jquery->get("Auth/infoUser","#divInfoUser",["hasLoader"=>false]);
+        UCookie::delete('settings');
+        GUI::applySettings($this->jquery);
+        $this->jquery->get("Auth/infoUser","#divInfoUser",["hasLoader"=>false]);
 		$this->forward("controllers\Nol","index",[],true,true);
 		echo $this->jquery->compile();
 	}

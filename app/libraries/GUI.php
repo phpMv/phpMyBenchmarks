@@ -357,4 +357,23 @@ class GUI {
 			$list->addItem(["header"=>$result->getTestcase()->getName(),"description"=>$tag." ".Models::getTime($result->getTimer())]);
 	}
 
+    public static function applySettings(\Ajax\php\ubiquity\JsUtils $jquery){
+        $style=MySettings::getStyle();
+        $bgColor=MySettings::getBgColor();
+        if($style==='inverted'){
+            $js=<<<JS
+$('.ui,.icon').not('#secondary .menu,#secondary.menu').addClass('inverted');
+$('body').css('background-color','{$bgColor}');
+$('#idTheme>i').removeClass('moon').addClass('sun');
+JS;
+        }else{
+            $js=<<<JS
+$('.ui,.icon').not('#secondary .menu,#secondary.menu').removeClass('inverted');
+$('body').css('background-color','{$bgColor}');
+$('#idTheme>i').removeClass('sun').addClass('moon');
+JS;
+        }
+        $jquery->exec($js,true);
+    }
+
 }

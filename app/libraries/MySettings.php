@@ -9,20 +9,21 @@ class MySettings {
 
     private static $default='["aceTheme": "github","theme": "light","bgColor":"automatic]';
 
+    private static $settings=null;
+
     private static $defaultValues=['dark'=>['bgColor'=>'#2d2d30','aceTheme'=>'terminal','style'=>'inverted'],'light'=>['bgColor'=>'#ffffff','aceTheme'=>'solarized_light','style'=>'']];
 
     public static function getInitialSettings() {
         if(UserAuth::isAuth()){
             $u=UserAuth::getUser();
             UCookie::set('settings',$u->getSettings());
-            return $u->getSettings_();
+            return self::$settings=$u->getSettings_();
         }
         return self::getSettings();
     }
 
     public static function getSettings(){
-        $settings=UCookie::get('settings',\json_encode(self::$default));
-        return \json_decode($settings,true);
+        return self::$settings??\json_decode(UCookie::get('settings',\json_encode(self::$default)),true);
     }
 
     public static function saveSettings($settings): void {
