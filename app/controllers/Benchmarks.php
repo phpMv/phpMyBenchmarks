@@ -41,25 +41,25 @@ class Benchmarks extends ControllerBase{
 		GUI::displayBenchmarks($this->jquery,$this->view,$this,$benchmarks,null,"Benchmarks/all",DAO::count("models\Benchmark"));
 	}
 
-    private function allTabs($title,$param=null){
+    private function allTabs($title,$action,$paramBenchmarks=[],$paramDomains=[]){
         $tab=$this->semantic->htmlTab("allTabs");
-        $tab->addAndForwardTab($this->jquery, $title, $this, "controllers\\Benchmarks", "all");
-        $tab->addAndForwardTab($this->jquery, "By category", $this, "controllers\\Benchmarks", "domains",[$param]);
+        $tab->addAndForwardTab($this->jquery, $title, $this, "controllers\\Benchmarks", $action,$paramBenchmarks);
+        $tab->addAndForwardTab($this->jquery, "By category", $this, "controllers\\Benchmarks", "domains",$paramDomains);
         $this->jquery->renderView("benchmarks/allTabs.html");
     }
 
 	public function allTab(){
-        $this->allTabs('All benchmarks');
+        $this->allTabs('All benchmarks','all');
 	}
 
 	public function myTab(){
-        $this->allTabs('My benchmarks','my');
+        $this->allTabs('My benchmarks','my',[],['my']);
 	}
 
     public function userTab($id){
         $user=DAO::getById(User::class,$id,false);
         if($user!==null){
-            $this->allTabs($user->getLogin()."'s benchmarks",$id);
+            $this->allTabs($user->getLogin()."'s benchmarks",'user',[$id],[$id]);
         }
     }
 
