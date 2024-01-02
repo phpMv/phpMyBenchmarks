@@ -1,6 +1,7 @@
 <?php
 namespace controllers;
 
+use libraries\MySettings;
 use models\User;
 use Ubiquity\attributes\items\router\Get;
 use Hybridauth\Adapter\AdapterInterface;
@@ -38,10 +39,12 @@ class MyOauth extends \Ubiquity\controllers\auth\AbstractOAuthController {
                 $user->setAuthkey($user_profile->identifier);
                 $user->setAvatar($user_profile->photoURL);
                 $user->setPassword($user_profile->identifier);
+                $user->setSettings(\json_encode(MySettings::getSettings()));
                 DAO::insert($user);
             }
             $_SESSION["user"]=$user;
             $user->setAvatar($user_profile->photoURL);
+            MySettings::getInitialSettings();
             setcookie("autoConnect", $name, time()+3600, "/");
             if (array_key_exists("action", $_SESSION)) {
                 Startup::runAction($_SESSION["action"], false, false);
