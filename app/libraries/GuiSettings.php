@@ -162,6 +162,7 @@ class GuiSettings{
         $de->fieldAsDropDown('aceTheme',$this->ace_themes,false,['jsCallback'=>function($elm){
             $elm->getField()->asSearch('aceTheme');
         }]);
+        $de->fieldAsDropDown('theme',['dark'=>'Dark','light'=>'Light'],false);
         $de->setCaptions($keys);
         $de->setCaption('_toDelete', '<div class="ui cancel-all icon '.$this->style.' button"><i class="remove icon"></i> Cancel all deletions</span>');
         if($asCompo) {

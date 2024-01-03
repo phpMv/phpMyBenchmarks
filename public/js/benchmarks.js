@@ -20,7 +20,8 @@ const setAceEditor = function (elementId, readOnly,aceTheme) {
 		readOnly: readOnly,
 		showLineNumbers: !readOnly,
 		highlightActiveLine: !readOnly,
-		highlightGutterLine: !readOnly
+		highlightGutterLine: !readOnly,
+		fontSize: '14px'
 	});
 };
 
@@ -30,10 +31,11 @@ const drawChart = function (title, rows, div) {
 	const data = new google.visualization.DataTable();
 	data.addColumn('string', 'Test case');
 	data.addColumn('number', 'Time');
+	data.addColumn({type:'string', role:'style'});
 	data.addRows(rows);
 
 	// Set chart options
-	const options = {'title': title, 'vAxis': {'minValue': 0}, 'hAxis': {'minValue': 0}};
+	const options = {'title': title, 'vAxis': {'minValue': 0}, 'hAxis': {'minValue': 0},'legend':'none'};
 
 	// Instantiate and draw our chart, passing in some options.
 	const chart = new google.visualization.ColumnChart(document.getElementById(div));

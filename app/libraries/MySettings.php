@@ -27,6 +27,7 @@ class MySettings {
     }
 
     public static function saveSettings($settings): void {
+        self::$settings=$settings;
         UCookie::set('settings',\json_encode($settings));
         if(UserAuth::isAuth()){
             $u=UserAuth::getUser();

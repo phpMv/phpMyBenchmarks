@@ -4,6 +4,7 @@ namespace libraries;
 
 use Ajax\common\Widget;
 use Ajax\JsUtils;
+use Ajax\semantic\html\base\constants\TextAlignment;
 use Ajax\semantic\html\base\HtmlSemCollection;
 use Ajax\semantic\html\elements\HtmlButton;
 use models\Benchmark;
@@ -273,6 +274,10 @@ class GUI {
 			$see->addClass("see")->asIcon("unhide");
             self::setStyle($see);
 		});
+
+        $deBenchs->onPreCompile(function ($dt) {
+            $dt->setColAlignment(5, TextAlignment::RIGHT);
+        });
 
 		$deBenchs->setUrls(["refresh"=>$jsonUrl,"edit"=>"Main/benchmark","delete"=>"Benchmarks/delete"]);
 		$deBenchs->setTargetSelector(["edit"=>"#main-container","delete"=>"#info"]);

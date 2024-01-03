@@ -248,7 +248,9 @@ JS;
         } catch (\Exception $e) {
             echo GUI::showSimpleMessage($this->jquery,"Your configuration contains errors.<br>The configuration file has not been saved.<br>" . $e->getMessage(), "error", "warning circle");
         }
-        $this->forward(Main::class, "index", null, true, true);
+        $this->forward("controllers\Nol","index",[],true,true);
+        GUI::applySettings($this->jquery);
+        echo $this->jquery->compile();
     }
 
     public function _getSettingsSource(){

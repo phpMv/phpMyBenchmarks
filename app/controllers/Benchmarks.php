@@ -1,5 +1,6 @@
 <?php
 namespace controllers;
+use Ajax\semantic\html\base\constants\TextAlignment;
 use libraries\MySettings;
 use models\User;
 use Ubiquity\orm\DAO;
@@ -200,10 +201,13 @@ class Benchmarks extends ControllerBase{
 		});
 		$listExecs->setActiveRowSelector("error");
 		if($user!=null && $user->getId()==$benchmark->getUser()->getId()){
-			$listExecs->addDeleteButton(true);
+			$listExecs->addDeleteButton(true,['hasLoader'=>'internal']);
 			$listExecs->setUrls(["delete"=>"Benchmarks/deleteResult"]);
 			$listExecs->setTargetSelector(["delete"=>"#info"]);
 		}
+        $listExecs->onPreCompile(function ($dt) {
+            $dt->setColAlignment(3, TextAlignment::RIGHT);
+        });
 		$listExecs->getOnRow("click", "Benchmarks/seeExecutionResults","#ajax",["attr"=>"data-ajax","hasLoader"=>false,"ajaxTransition"=>"random"]);
 		return $listExecs;
 	}

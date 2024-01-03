@@ -14,7 +14,7 @@ use Ubiquity\utils\base\UArray;
 class Models {
 	public static $PHP_VERSIONS=["8.2.13"=>"Default 8.2"];
 	public static $DEFAULT_PHP_VERSION="8.2.13";
-	public static $NOTES=['152D39','5CB8CD','328C9B','FB8A52','DD7547','BB0D48','9E1248'];
+	public static $NOTES=['#152D39','#328C9B','#5CB8CD','#FB8A52','#DD7547','#BB0D48','#9E1248'];
 
 	const TIME_UNITS=[" "=>1,"m"=>0.001,"µ"=>0.000001,"n"=>0.000000001];
 	/**
@@ -66,15 +66,18 @@ class Models {
 		$array=[];$return=[];
 		foreach ($results as $result){
 			$time=$result->getTimer();
-			$array[$result->getTestcase()->getName()]=$time;
+            $color=self::$NOTES[$result->getNote()-1]??'black';
+			$array[$result->getTestcase()->getName()]=['time'=>$time,'color'=>$color];
 			if($time!=0 && (!isset($min) || $time<$min))
 				$min=$time;
 		}
-		foreach ($array as $k=>$v){
+		foreach ($array as $k=>$values){
+            $v=$values['time'];
+            $c=$values['color'];
 			if(isset($min) && $percent)
-				$return[]="['".$k."',".($v/$min*100)."]";
+				$return[]="['$k',".($v/$min*100).",'$c']";
 			else
-				$return[]="['".$k."',".$v."]";
+				$return[]="['$k',".$v.",'$c']";
 		}
 		return "[".\implode(",", $return)."]";
 	}
