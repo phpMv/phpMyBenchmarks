@@ -229,7 +229,7 @@ class Benchmarks extends ControllerBase{
 			$testId=$result->getTestcase()->getId();
 			$this->jquery->get("Benchmarks/seeResult/".$result->getId()."/".$testId,"#result-".$testId,["hasLoader"=>false,"ajaxTransition"=>"random"]);
 		}
-		$this->jquery->exec("drawChart('".$execution->getUid()."',".Models::getChartResults($results,true).",'graph');",true);
+		$this->jquery->exec("drawChart('".substr($execution->getUid(),0,7)."',".Models::getChartResults($results,true).",'graph');",true);
 
 		echo $this->jquery->compile();
 	}
@@ -250,7 +250,8 @@ class Benchmarks extends ControllerBase{
 		$btInterne->addClass('fluid');
 		$this->jquery->exec('$("#note-'.$idTest.'").html(\''.GUI::getLblNote($result,false).'\');',true);
 		$this->jquery->exec('$("#php-'.$idTest.'").html(\''.GUI::getPhpVersion($result->getPhpVersion(),true).'\');',true);
-		echo $bt;
+		$this->setStyle($bt);
+        echo $bt;
 		echo $this->jquery->compile();
 	}
 

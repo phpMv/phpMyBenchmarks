@@ -44,10 +44,19 @@ class UserAuth {
 			$dd->addItem("My benchmarks")->setProperty("data-ajax", "Benchmarks/myTab");
 			$dd->addItem("All benchmarks")->setProperty("data-ajax", "Benchmarks/allTab");
 			$dd->addDividerItem();
-			$dd->addItem("Settings")->setProperty("data-ajax", "Auth/settings");;
+            $theme=MySettings::getTheme();
+            $iconTheme='sun';
+            $themeCaption='Light theme';
+            if($theme==='light'){
+                $themeCaption='Dark theme';
+                $iconTheme='moon';
+            }
+            $dd->addItem("<span>$themeCaption</span>")->setIdentifier('idTheme')->addIcon($iconTheme);
+			$dd->addItem("Settings")->setProperty("data-ajax", "Auth/settings");
             $dd->addDividerItem();
             $dd->addItem("Sign out")->setProperty("data-ajax", "Auth/disconnect");
-			$dd->getOnClick("","#main-container",["attr"=>"data-ajax","ajaxTransition"=>"random"]);
+			$jquery->getOnClick('#ddUser [data-ajax]',"","#main-container",["attr"=>"data-ajax","hasLoader"=>false]);
+            $jquery->getOnClick("#idTheme",'Auth/toggleTheme',"#ajax",['hasLoader'=>'internal']);
 			if($asItem)
 				$dd->wrap('<div class="item">','</div>');
             GUI::setStyle($dd);
@@ -58,12 +67,13 @@ class UserAuth {
 			$buttons->getElement(1)->setColor("teal")->addIcon("user add");
             $iconTheme=MySettings::getTheme()==='light'?'moon':'sun';
             $buttons->getElement(2)->setIdentifier('idTheme')->asIcon($iconTheme);
-			$buttons->setPropertyValues("data-ajax", ["Auth/signin","Auth/signup","Auth/toggleTheme"]);
+			$buttons->setPropertyValues("data-ajax", ["Auth/signin","Auth/signup"]);
             GUI::setStyle($buttons);
-			$buttons->getOnClick("","#main-container",["attr"=>"data-ajax",'hasLoader'=>'internal']);
+			$jquery->getOnClick("#buttons [data-ajax]",'',"#main-container",["attr"=>"data-ajax",'hasLoader'=>'internal']);
 			if($asItem)
 				$buttons->wrap('<div class="item">','</div>');
-			echo $buttons->compile($jquery);
+            $jquery->getOnClick("#idTheme",'Auth/toggleTheme',"#ajax",['hasLoader'=>'internal']);
+            echo $buttons->compile($jquery);
 		}
 		return \ob_get_clean();
 	}

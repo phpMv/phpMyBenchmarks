@@ -1,11 +1,8 @@
 @CHARSET "UTF-8";
 .editor { 
-	/*min-height: 100px;*/
 	width: 100%;
 }
-.ui.segment.editor{
-/*	background-color: #002B36;*/
-}
+
 .ui.label.fluid.basic.left.pointing{
 	min-width: 180px;
 }
@@ -95,6 +92,10 @@ footer {
 .noteG{
 	background-color: #9E1248 !important;
 }
+.note.inverted{
+	border: 1px solid rgba(200,200,200,.6);
+}
+
 #img-evaluation {
   opacity: 0.5;
 }
@@ -107,4 +108,25 @@ footer {
 	border-radius: .28571429rem;
 	border: 1px solid rgba(34,36,38,.15);
 	font-size: 1rem;
+}
+
+#graph{
+	box-shadow: 0 1px 2px 0 rgba(34,36,38,.15);
+	border-radius: .28571429rem;
+}
+
+#graph svg > rect {
+	fill: #F8F8F9!important;
+}
+
+.inverted #graph text {
+	fill: #e5e3de !important;
+}
+
+.inverted #graph svg > rect {
+	fill: #1B1C1D !important;
+}
+
+.inverted path {
+	fill: #2d2d30!important;
 }

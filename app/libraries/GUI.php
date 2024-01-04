@@ -95,6 +95,7 @@ class GUI {
 						$btInterne=$bt->getContent()[0];
 						$btInterne->addClass('fluid');
 						$btInterne->addPopup("Content",$output->content);
+                        self::setStyle($bt);
 						echo $bt->compile($jquery);
 					}else{
 						self::showRunningMessage($jquery,$obj->content,$obj->type,$form."-".$i);
@@ -342,10 +343,10 @@ class GUI {
 			$note=chr($note+64);
 		if($small){
 			$lbl=new HtmlLabel("lblNote-".$result->getId());
-			$lbl->addClass("empty circular note note".$note);
+			$lbl->addClass("empty circular note note".$note. " ".self::$style);
 		}else{
 			$lbl=new HtmlLabel("lblNote-".$result->getId(),$note);
-			$lbl->addClass("circular note note".$note);
+			$lbl->addClass("circular note note".$note. " ".self::$style);
 		}
 		return $lbl;
 	}

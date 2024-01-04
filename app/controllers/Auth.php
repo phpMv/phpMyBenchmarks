@@ -182,22 +182,29 @@ class Auth extends ControllerBase{
     public function toggleTheme(){
         $theme=MySettings::getTheme();
         $newValues=MySettings::getToggleValues($theme);
-        if($newValues['style']==='inverted'){
+        $aceTheme=MySettings::getAceTheme($newValues);
+        $style=MySettings::getStyle($newValues);
+        $bgColor=MySettings::getBgColor($newValues);
+        if($style==='inverted'){
             $js=<<<JS
 $('.ui,.icon').not('#secondary .menu,#secondary.menu').addClass('inverted');
-$('body').css('background-color','{$newValues['bgColor']}');
+$('body').css('background-color','{$bgColor}');
 $('#idTheme>i').removeClass('moon').addClass('sun');
+$("#idTheme>span").text($("#idTheme").text().replace("Dark theme", "Light theme"));
+editors.forEach(e=>e.setTheme("ace/theme/"+"$aceTheme"));
 JS;
         }else{
             $js=<<<JS
 $('.ui,.icon').not('#secondary .menu,#secondary.menu').removeClass('inverted');
-$('body').css('background-color','{$newValues['bgColor']}');
+$('body').css('background-color','{$bgColor}');
 $('#idTheme>i').removeClass('sun').addClass('moon');
+$("#idTheme>span").text($("#idTheme").text().replace("Light theme", "Dark theme"));
+editors.forEach(e=>e.setTheme("ace/theme/"+"$aceTheme"));
 JS;
        }
         MySettings::saveSettings($newValues);
         $this->jquery->exec($js,true);
-        $this->forward("controllers\Nol","index",[],true,true);
+        //$this->forward("controllers\Nol","index",[],true,true);
         echo $this->jquery->compile();
     }
 

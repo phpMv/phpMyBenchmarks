@@ -11,7 +11,7 @@ class MySettings {
 
     private static $settings=null;
 
-    private static $defaultValues=['dark'=>['bgColor'=>'#2d2d30','aceTheme'=>'terminal','style'=>'inverted'],'light'=>['bgColor'=>'#ffffff','aceTheme'=>'solarized_light','style'=>'']];
+    private static $internalDefaultValues=['dark'=>['bgColor'=>'#2d2d30','aceTheme'=>'terminal','style'=>'inverted'],'light'=>['bgColor'=>'#ffffff','aceTheme'=>'solarized_light','style'=>'']];
 
     public static function getInitialSettings() {
         if(UserAuth::isAuth()){
@@ -37,8 +37,9 @@ class MySettings {
         }
     }
 
-    public static function getAceTheme(){
-        $aceTheme=self::getSettings()['aceTheme']??'automatic';
+    public static function getAceTheme($settings=null){
+        $settings??=self::getSettings();
+        $aceTheme=$settings['aceTheme']??'automatic';
         if($aceTheme==='automatic'){
             $aceTheme=self::getDefault('aceTheme');
         }
@@ -49,12 +50,14 @@ class MySettings {
         return self::getStyle()==='inverted'?'dark':'light';
     }
 
-    public static function getStyle(){
-        return self::getSettings()['style']??self::getDefault('style');
+    public static function getStyle($settings=null){
+        $settings??=self::getSettings();
+        return $settings['style']??self::getDefault('style');
     }
 
-    public static function getBgColor(){
-        $bgColor=self::getSettings()['bgColor']??'automatic';
+    public static function getBgColor($settings=null){
+        $settings??=self::getSettings();
+        $bgColor=$settings['bgColor']??'automatic';
         if($bgColor==='automatic'){
             $bgColor=self::getDefault('bgColor');
         }
@@ -63,11 +66,15 @@ class MySettings {
 
     private static function getDefault(string $part) {
         $theme=self::getSettings()['theme']??'light';
-        return self::$defaultValues[$theme][$part]??'';
+        return self::$internalDefaultValues[$theme][$part]??'';
+    }
+
+    public static function getDefaultThemeValues($theme){
+        return ['theme'=>$theme,'bgColor'=>'automatic','aceTheme'=>'automatic'];
     }
 
     public static function getToggleValues(string $actualTheme): array {
         $theme=($actualTheme==='dark')?'light':'dark';
-        return self::$defaultValues[$theme];
+        return self::$settings=self::getDefaultThemeValues($theme);
     }
 }

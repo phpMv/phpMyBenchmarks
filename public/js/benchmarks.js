@@ -4,7 +4,7 @@ const getNextForm = function (identifier) {
 		return elms.first();
 	return false;
 };
-
+const editors=[];
 const setAceEditor = function (elementId, readOnly,aceTheme) {
 	readOnly = readOnly || false;
 	aceTheme = aceTheme || 'solarized_dark';
@@ -23,8 +23,8 @@ const setAceEditor = function (elementId, readOnly,aceTheme) {
 		highlightGutterLine: !readOnly,
 		fontSize: '14px'
 	});
+	editors.push(editor);
 };
-
 const drawChart = function (title, rows, div) {
 
 	// Create the data table.
@@ -35,7 +35,7 @@ const drawChart = function (title, rows, div) {
 	data.addRows(rows);
 
 	// Set chart options
-	const options = {'title': title, 'vAxis': {'minValue': 0}, 'hAxis': {'minValue': 0},'legend':'none'};
+	const options = {'title': title, 'vAxis': {'minValue': 0}, 'hAxis': {'minValue': 0},'legend':'none',fontName: 'Lato,system-ui,-apple-system,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"'};
 
 	// Instantiate and draw our chart, passing in some options.
 	const chart = new google.visualization.ColumnChart(document.getElementById(div));
