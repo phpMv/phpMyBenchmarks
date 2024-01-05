@@ -209,7 +209,7 @@ class Benchmarks extends ControllerBase{
             $dt->setColAlignment(3, TextAlignment::RIGHT);
         });
 		$listExecs->getOnRow("click", "Benchmarks/seeExecutionResults","#ajax",["attr"=>"data-ajax","hasLoader"=>false,"ajaxTransition"=>"random"]);
-		return $listExecs;
+        return $listExecs;
 	}
 
 	public function deleteResult($id){
@@ -258,7 +258,7 @@ class Benchmarks extends ControllerBase{
 	public function seeChart($idExecution){
 		$execution=DAO::getById(Execution::class, $idExecution);
 		$results=DAO::getOneToMany($execution, "results");
-		$this->jquery->exec("drawChart('".$execution->getUid()."',".Models::getChartResults($results,true).",'graph');",true);
+		$this->jquery->exec("drawChart('".substr($execution->getUid(),0,7)."',".Models::getChartResults($results,true).",'graph');",true);
 		echo $this->jquery->compile();
 	}
 
@@ -320,8 +320,7 @@ class Benchmarks extends ControllerBase{
 			DAO::insert($result);
 		}
 
-		echo $this->listExecs($benchmark);
-		echo $this->jquery->compile($this->view);
+		$this->jquery->renderComponent($this->listExecs($benchmark));
 	}
 
 	public function stars($idBenchmark){

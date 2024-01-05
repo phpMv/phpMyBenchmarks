@@ -25,14 +25,12 @@ class Main extends ControllerBase{
 
 	public function jumbotron(){
 		$_SESSION["jumbotron"]=true;
-		echo GUI::getJumboButtons(false)->compile($this->jquery);
-		echo $this->jquery->compile($this->view);
+		$this->jquery->renderComponent(GUI::getJumboButtons(false));
 	}
 
 	public function notJumbotron(){
 		$_SESSION["jumbotron"]=false;
-		echo GUI::getJumboButtons(true)->compile($this->jquery);
-		echo $this->jquery->compile($this->view);
+        $this->jquery->renderComponent(GUI::getJumboButtons(true));
 	}
 
 	private function getButtons(HtmlButtonGroups $buttons){
@@ -196,7 +194,7 @@ class Main extends ControllerBase{
 	public function testsTerminate(){
 		$benchmark=$_SESSION["benchmark"];
 		$execution=$_SESSION["execution"];
-		$this->jquery->exec("drawChart('".$_SESSION["uid"]."',".Models::getResults($execution).",'graph');",true);
+		$this->jquery->exec("drawChart('".substr($_SESSION["uid"],0,7)."',".Models::getResults($execution).",'graph');",true);
 
 		$message=$this->semantic->htmlMessage("msg-terminate");
 		$message->setDismissable();
@@ -210,8 +208,7 @@ class Main extends ControllerBase{
 			$message->setIcon("warning circle");
 			$message->addClass("warning");
 		}
-		echo $message;
-		echo $this->jquery->compile($this->view);
+        $this->jquery->renderComponent($message);
 	}
 
 	private function replaceAll($array,$subject){

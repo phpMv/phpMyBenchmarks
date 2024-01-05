@@ -3,7 +3,7 @@
 namespace libraries;
 
 use Ajax\common\Widget;
-use Ajax\JsUtils;
+use Ajax\php\ubiquity\JsUtils;
 use Ajax\semantic\html\base\constants\TextAlignment;
 use Ajax\semantic\html\base\HtmlSemCollection;
 use Ajax\semantic\html\elements\HtmlButton;
@@ -64,8 +64,7 @@ class GUI {
 			if(isset($content) && $content!==""){
 				$msg->addPopup($style,$content);
 			}
-            self::setStyle($msg);
-			echo $msg->compile($jquery);
+            $jquery->renderComponent($msg);
 		}
 	}
 
@@ -95,8 +94,7 @@ class GUI {
 						$btInterne=$bt->getContent()[0];
 						$btInterne->addClass('fluid');
 						$btInterne->addPopup("Content",$output->content);
-                        self::setStyle($bt);
-						echo $bt->compile($jquery);
+                        $jquery->renderComponent($bt);
 					}else{
 						self::showRunningMessage($jquery,$obj->content,$obj->type,$form."-".$i);
 					}
@@ -116,7 +114,7 @@ class GUI {
 			if(isset($content) && $content!==""){
 				$msg->addPopup($style,$content);
 			}
-			echo $msg->compile($jquery);
+			$jquery->renderComponent($msg);
 		}
 	}
 

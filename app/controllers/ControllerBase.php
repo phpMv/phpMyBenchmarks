@@ -37,11 +37,7 @@ abstract class ControllerBase extends Controller{
         $this->style=MySettings::getStyle();
         $this->view->setVar("style",$this->style);
         if($this->style==='inverted') {
-            $this->jquery->setParam('beforeCompileHtml', function ($elm) {
-                if (\method_exists($elm, 'setInverted')) {
-                    $elm->setInverted(false);
-                }
-            });
+            $this->jquery->applyInverted();
         }
         GUI::$style=$this->style;
         if($this->style==='inverted'){

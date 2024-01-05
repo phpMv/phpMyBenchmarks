@@ -2,8 +2,7 @@
 
 namespace libraries;
 
-use Ajax\JsUtils;
-use Ubiquity\js\Jquery;
+use Ajax\php\ubiquity\JsUtils;
 use Ajax\semantic\html\elements\HtmlImage;
 use Ubiquity\utils\http\USession;
 use models\User;
@@ -59,8 +58,7 @@ class UserAuth {
             $jquery->getOnClick("#idTheme",'Auth/toggleTheme',"#ajax",['hasLoader'=>'internal']);
 			if($asItem)
 				$dd->wrap('<div class="item">','</div>');
-            GUI::setStyle($dd);
-			echo $dd->compile($jquery);
+            $jquery->renderComponent($dd);
 		}else{
 			$buttons=$jquery->semantic()->htmlButtonGroups("buttons",["Sign in","Sign up",""]);
 			$buttons->getElement(0)->asLink()->addIcon("sign in");
@@ -68,12 +66,11 @@ class UserAuth {
             $iconTheme=MySettings::getTheme()==='light'?'moon':'sun';
             $buttons->getElement(2)->setIdentifier('idTheme')->asIcon($iconTheme);
 			$buttons->setPropertyValues("data-ajax", ["Auth/signin","Auth/signup"]);
-            GUI::setStyle($buttons);
 			$jquery->getOnClick("#buttons [data-ajax]",'',"#main-container",["attr"=>"data-ajax",'hasLoader'=>'internal']);
 			if($asItem)
 				$buttons->wrap('<div class="item">','</div>');
             $jquery->getOnClick("#idTheme",'Auth/toggleTheme',"#ajax",['hasLoader'=>'internal']);
-            echo $buttons->compile($jquery);
+            $jquery->renderComponent($buttons);
 		}
 		return \ob_get_clean();
 	}

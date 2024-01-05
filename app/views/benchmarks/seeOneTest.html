@@ -4,8 +4,18 @@
 			<div id="code-{{id}}" class="code editor">{{code}}</div>
 		</div>
 		<div class="five wide column">
-			<div class="ui segment center aligned responseDiv {{style}}">
-				<div id="result-{{id}}" class="responseResult"></div>
+			<div class="ui segment responseDiv {{style}}">
+				<div id="result-{{id}}" class="responseResult">
+					<div class="ui icon {{style}} mini message">
+						<i class="lightning icon"></i>
+						<div class="content">
+							<div class="header">
+								Result
+							</div>
+							<p>Select an execution to see the results.</p>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>

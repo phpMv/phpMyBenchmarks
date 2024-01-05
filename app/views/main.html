@@ -1,4 +1,4 @@
-<div class="ui container">
+<div class="ui container {{style}}">
 {{ q["h-name"] | raw }}
 	<div class="ui styled fluid accordion {{style}}">
 		<div class="active title">
@@ -19,10 +19,11 @@
 			</div>
 		</div>
 	</div>
+
+	{{q["btsTests"] | raw }}
 	<br>
 	<div id="results"></div>
 	<div id="graph"></div>
-	{{q["btsTests"] | raw }}
 	<div id="info"></div>
 </div>
 

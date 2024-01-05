@@ -59,6 +59,11 @@ class Models {
 
 	public static function getResults(Execution $execution,$percent=true){
 		$results=$execution->getResults();
+        self::sortResults($results);
+        $index=1;
+        foreach ($results as $result) {
+            $result->setNote($index++);
+        }
 		return self::getChartResults($results,$percent);
 	}
 

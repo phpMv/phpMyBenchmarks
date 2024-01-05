@@ -130,8 +130,7 @@ class Auth extends ControllerBase{
 
 		$formCallback();
 
-		$this->jquery->compile($this->view);
-		$this->loadView("Auth/sign.html",$titles);
+		$this->jquery->renderView("Auth/sign.html",$titles);
 	}
 
 	public function infoUser() {
