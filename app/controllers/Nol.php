@@ -60,7 +60,7 @@ class Nol extends ControllerBase{
 		}
 		$segment=$this->semantic->htmlSegment("tmp-bench");
 		$bt=new HtmlButton("btUpdate","Update");
-		$bt->addLabel(Models::getBenchmarkName($benchmark,true,true),true,"edit");
+		$bt->addLabel(Models::getBenchmarkName($benchmark,false,true),true,"edit");
         $this->setStyle($bt);
 		$bt->getOnClick('Main/benchmark/session',"#main-container",['hasLoader'=>'internal']);
 		$segment->setContent(['Last benchmark&nbsp;'.$saved,$bt]);
@@ -71,8 +71,6 @@ class Nol extends ControllerBase{
 			$message->setContent(["You need to be logged in to save this benchmark"]);
 			$segment->addContent($message);
 		}
-
-
 	}
 
 	public function initialize(){

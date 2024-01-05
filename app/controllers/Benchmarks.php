@@ -141,16 +141,15 @@ class Benchmarks extends ControllerBase{
 		$instanceString=$instance."";
 			if(count($_POST)>0){
 				if(DAO::remove($instance)){
-					$message=$this->showSimpleMessage("Suppression de `".$instanceString."`", "info","info",4000);
+					$message=$this->showSimpleMessage("Deletion","Deletion of `".$instanceString."`", "info","info",4000);
 					$this->jquery->exec("$('tr[data-ajax={$ids}]').remove();",true);
 				}else{
-					$message=$this->showSimpleMessage("Impossible de supprimer `".$instanceString."`", "warning","warning");
+					$message=$this->showSimpleMessage('Deletion',"Unable to delete `".$instanceString."`", "warning","warning");
 				}
 			}else{
-				$message=$this->showConfMessage("Confirmez la suppression de `".$instanceString."`?", "", "Benchmarks/delete/{$ids}", "#info", $ids);
+				$message=$this->showConfMessage('Deletion',"Confirm the deletion of `".$instanceString."`?", "", "Benchmarks/delete/{$ids}", "#info", $ids);
 			}
-			echo $message;
-			echo $this->jquery->compile($this->view);
+			$this->jquery->renderComponent($message);
 	}
 
 	public function seeOne($idBenchmark){
@@ -250,9 +249,7 @@ class Benchmarks extends ControllerBase{
 		$btInterne->addClass('fluid');
 		$this->jquery->exec('$("#note-'.$idTest.'").html(\''.GUI::getLblNote($result,false).'\');',true);
 		$this->jquery->exec('$("#php-'.$idTest.'").html(\''.GUI::getPhpVersion($result->getPhpVersion(),true).'\');',true);
-		$this->setStyle($bt);
-        echo $bt;
-		echo $this->jquery->compile();
+		$this->jquery->renderComponent($bt);
 	}
 
 	public function seeChart($idExecution){
@@ -361,9 +358,10 @@ class Benchmarks extends ControllerBase{
         $this->jquery->renderView('benchmarks/fork-stars.html');
 	}
 
-	private function showSimpleMessage($content,$type,$icon="info",$timeout=NULL){
+	private function showSimpleMessage($title,$content,$type,$icon="info",$timeout=NULL){
 		$semantic=$this->jquery->semantic();
 		$message=$semantic->htmlMessage("msg-".rand(0,50),$content,$type);
+        $message->addHeader($title);
 		$message->setIcon($icon." circle");
 		$message->setDismissable();
 		if(isset($timeout))
@@ -371,8 +369,8 @@ class Benchmarks extends ControllerBase{
 		return $message;
 	}
 
-	private function showConfMessage($content,$type,$url,$responseElement,$data,$attributes=NULL){
-		$messageDlg=$this->showSimpleMessage($content, $type,"help circle");
+	private function showConfMessage($title,$content,$type,$url,$responseElement,$data,$attributes=NULL){
+		$messageDlg=$this->showSimpleMessage($title,$content, $type,"help circle");
 		$btOkay=new HtmlButton("bt-okay","Confirm","positive");
 		$btOkay->addIcon("check circle");
 		$btOkay->postOnClick($url,"{data:'".$data."'}",$responseElement,$attributes);
@@ -380,7 +378,7 @@ class Benchmarks extends ControllerBase{
 		$btCancel->addIcon("remove circle outline");
 		$btCancel->onClick($messageDlg->jsHide());
 
-		$messageDlg->addContent([$btOkay,$btCancel]);
+		$messageDlg->addContent(['<div class="ui divider"></div>',$btOkay,$btCancel]);
 		return $messageDlg;
 	}
 
