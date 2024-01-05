@@ -25,12 +25,12 @@ class Main extends ControllerBase{
 
 	public function jumbotron(){
 		$_SESSION["jumbotron"]=true;
-		$this->jquery->renderComponent(GUI::getJumboButtons(false));
+		$this->jquery->renderComponent(GUI::getJumboButtons($this->jquery,false));
 	}
 
 	public function notJumbotron(){
 		$_SESSION["jumbotron"]=false;
-        $this->jquery->renderComponent(GUI::getJumboButtons(true));
+        $this->jquery->renderComponent(GUI::getJumboButtons($this->jquery,true));
 	}
 
 	private function getButtons(HtmlButtonGroups $buttons){

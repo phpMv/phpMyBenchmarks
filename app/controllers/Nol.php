@@ -20,7 +20,7 @@ class Nol extends ControllerBase{
 			$_SESSION["jumbotron"]=false;
 			$header=new HtmlHeader("header");
 			$header->asImage("img/benchmarks.png", "phpMyBenchmarks.net","Benchmark and improve your php code to get better performances");
-			$buttons=GUI::getJumboButtons();
+			$buttons=GUI::getJumboButtons($this->jquery);
 			$headerMessage=$this->semantic->htmlMessage("jumbotron",[$header,$buttons]);
 			$headerMessage->setDismissable(true);
 			$headerMessage->setCloseTransition("{animation : 'fade', duration : '1s', onComplete : function() { ".$this->jquery->getDeferred("Main/jumbotron","#menu-jumbotron")."}}");

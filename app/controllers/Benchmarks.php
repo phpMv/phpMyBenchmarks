@@ -298,7 +298,7 @@ class Benchmarks extends ControllerBase{
 		\array_shift($_SESSION["testsIds"]);
 		if(\count($_SESSION["testsIds"])>0){
 			$testsIds=$_SESSION["testsIds"];
-			$this->jquery->get("Benchmarks/runTest/".$testsIds[0],"#result-".$testsIds[0],['jsCallback'=>'console.log(data);']);
+			$this->jquery->get("Benchmarks/runTest/".$testsIds[0],"#result-".$testsIds[0]);
 		}else{
 			$this->jquery->get("Benchmarks/testTerminate","#list-executions",["ajaxTransition"=>"random","jqueryDone"=>"replaceWith"]);
 		}
@@ -319,6 +319,7 @@ class Benchmarks extends ControllerBase{
 			$result->setPhpVersion(Models::getTestPhpVersion($benchmark, $result->getTestcase()));
 			DAO::insert($result);
 		}
+        $this->jquery->exec("drawChart('".substr($execution->getUid(),0,7)."',".Models::getResults($execution).",'graph');",true);
 
 		$this->jquery->renderComponent($this->listExecs($benchmark));
 	}

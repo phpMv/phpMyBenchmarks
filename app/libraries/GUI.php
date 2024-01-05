@@ -176,13 +176,12 @@ class GUI {
 		return $toolbar;
 	}
 
-	public static function getJumboButtons($inJumbotron=true){
-		$buttons=new HtmlButtonGroups("user-buttons",["Create benchmark","All benchmarks"]);
+	public static function getJumboButtons(JsUtils $jquery,$inJumbotron=true){
+		$buttons=$jquery->semantic()->htmlButtonGroups("user-buttons",["Create benchmark","All benchmarks"]);
 		$buttons->getElement(0)->setColor("green")->setProperty("data-ajax", "Main/benchmark")->addIcon("plus");
 		$buttons->getElement(1)->setProperty("data-ajax", "Benchmarks/allTab");
 
 		self::getButtons($buttons,$inJumbotron);
-        self::setStyle($buttons);
 		$buttons->getOnClick('','#main-container',['attr'=>'data-ajax','hasLoader'=>'internal']);
 		return $buttons;
 	}
