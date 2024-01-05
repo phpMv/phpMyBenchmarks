@@ -147,7 +147,7 @@ class Benchmarks extends ControllerBase{
 					$message=$this->showSimpleMessage('Deletion',"Unable to delete `".$instanceString."`", "warning","warning");
 				}
 			}else{
-				$message=$this->showConfMessage('Deletion',"Confirm the deletion of `".$instanceString."`?", "", "Benchmarks/delete/{$ids}", "#info", $ids);
+				$message=$this->showConfMessage('Deletion',"Confirm the deletion of `".$instanceString."`?", "", "Benchmarks/delete/{$ids}", "#info", $ids,['hasLoader'=>'internal']);
 			}
 			$this->jquery->renderComponent($message);
 	}
