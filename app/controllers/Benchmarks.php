@@ -6,7 +6,6 @@ use models\User;
 use Ubiquity\orm\DAO;
 use Ajax\semantic\html\elements\HtmlLabel;
 use libraries\Models;
-use Ajax\semantic\html\elements\HtmlList;
 use models\Result;
 use libraries\UserAuth;
 use Ajax\semantic\html\elements\HtmlButton;
@@ -16,7 +15,6 @@ use models\Testcase;
 use libraries\ServerExchange;
 use models\Execution;
 use Ajax\semantic\html\elements\html5\HtmlLink;
-use Ajax\semantic\html\collections\HtmlMessage;
 use models\Domain;
 use Ajax\semantic\html\content\HtmlListItem;
 
@@ -60,7 +58,12 @@ class Benchmarks extends ControllerBase{
     public function userTab($id){
         $user=DAO::getById(User::class,$id,false);
         if($user!==null){
-            $this->allTabs($user->getLogin()."'s benchmarks",'user',[$id],[$id]);
+            $image = $user->getAvatar();
+            $image = ($image != null && $image != "") ? $image : "img/male.png";
+            $lbl = new HtmlLabel('', Models::getUserName($user)."'s benchmarks");
+            $lbl->addClass('basic');
+            $lbl->addAvatarImage($image, "", true)->addClass('spaced');
+            $this->allTabs($lbl,'user',[$id],[$id]);
         }
     }
 
@@ -153,6 +156,7 @@ class Benchmarks extends ControllerBase{
 	}
 
 	public function seeOne($idBenchmark){
+        $_SESSION['activeBenchmark']=true;
 		$user=UserAuth::getUser();
 		$benchmark=DAO::getById(Benchmark::class, $idBenchmark);
 		GUI::getBenchmarkTop($this->jquery,$benchmark,$user);
@@ -215,10 +219,10 @@ class Benchmarks extends ControllerBase{
 		$execution=DAO::getById(Execution::class, $id);
 		if($execution!=null){
 			DAO::remove($execution);
-			echo GUI::showSimpleMessage($this->jquery, "Result deleted", "info","info circle",5000);
+			$msg=GUI::showSimpleMessage($this->jquery, "Result deleted", "info","info circle",5000);
 			$this->jquery->exec("$('tr[data-ajax={$id}]').remove();",true);
 		}
-		echo $this->jquery->compile($this->view);
+		$this->jquery->renderComponent($msg);
 	}
 
 	public function seeExecutionResults($idExecution){
@@ -260,6 +264,10 @@ class Benchmarks extends ControllerBase{
 	}
 
 	public function run($idBenchmark){
+        if(!$_SESSION['activeBenchmark']??false){
+            $this->forward(Benchmarks::class,'seeOne',[$idBenchmark],true,true);
+        }
+        $_SESSION['activeBenchmark']=true;
 		$benchmark=DAO::getById(Benchmark::class, $idBenchmark);
 		DAO::getOneToMany($benchmark, "testcases");
 		$execution=$benchmark->addExecution(\md5(\microtime(true)));
@@ -267,12 +275,13 @@ class Benchmarks extends ControllerBase{
 		$testsIds=Models::getTestIds($benchmark);
 		$_SESSION["testsIds"]=$testsIds;
 		if(\count($testsIds)>0){
-			$this->jquery->get("Benchmarks/runTest/".$testsIds[0],"#result-".$testsIds[0]);
+			$this->jquery->get("Benchmarks/runTest/".$testsIds[0],"#result-".$testsIds[0],['hasLoader'=>false]);
 		}
 		echo $this->jquery->compile();
 	}
 
 	public function runTest($id){
+        $_SESSION['activeBenchmark']=true;
 		$isWin=\strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
 		$prefix=($isWin)?"":ROOT.DS."..".DS."server".DS;
 		$test=DAO::getById(Testcase::class, $id);
@@ -295,14 +304,15 @@ class Benchmarks extends ControllerBase{
 		\array_shift($_SESSION["testsIds"]);
 		if(\count($_SESSION["testsIds"])>0){
 			$testsIds=$_SESSION["testsIds"];
-			$this->jquery->get("Benchmarks/runTest/".$testsIds[0],"#result-".$testsIds[0]);
+			$this->jquery->get("Benchmarks/runTest/".$testsIds[0],"#result-".$testsIds[0],['hasLoader'=>false]);
 		}else{
-			$this->jquery->get("Benchmarks/testTerminate","#list-executions",["ajaxTransition"=>"random","jqueryDone"=>"replaceWith"]);
+			$this->jquery->get("Benchmarks/testTerminate","#list-executions",['hasLoader'=>false,"ajaxTransition"=>"random","jqueryDone"=>"replaceWith"]);
 		}
 		echo $this->jquery->compile();
 	}
 
 	public function testTerminate(){
+        $_SESSION['activeBenchmark']=true;
 		$execution=$_SESSION["execution"];
 		DAO::insert($execution);
 		$benchmark=$execution->getBenchmark();
@@ -322,39 +332,49 @@ class Benchmarks extends ControllerBase{
 	}
 
 	public function stars($idBenchmark){
-		$benchmark=DAO::getById(Benchmark::class, $idBenchmark);
+        $_SESSION['activeBenchmark']=false;
+        $benchmark=DAO::getById(Benchmark::class, $idBenchmark);
 		GUI::getBenchmarkTop($this->jquery, $benchmark,UserAuth::getUser());
 		$this->semantic->htmlHeader("bench-header",2,"Stargazers");
 		$userstars=DAO::getManyToMany($benchmark, "users");
-		$list=$this->semantic->htmlCardGroups("list-user-stars");
-		$list->fromDatabaseObjects($userstars, function($user) use ($list){
-			$image=$user->getAvatar();
-			$image=($image!=null && $image!="")?$image:"img/male.png";
-			$card=$list->newItem("card-".$user->getId());
-            $lbl=new HtmlLabel('',Models::getUserName($user));
-            $lbl->setBasic()->setProperty('data-ajax',$user->getId())->addClass('user-click');
-			$card->addItemContent($lbl)->addImage($image,"","mini")->setFloated("left")->asAvatar();
-			return $card;
+        if(\count($userstars)>0) {
+            $list = $this->semantic->htmlCardGroups("list-user-stars");
+            $list->fromDatabaseObjects($userstars, function ($user) use ($list) {
+                $image = $user->getAvatar();
+                $image = ($image != null && $image != "") ? $image : "img/male.png";
+                $card = $list->newItem("card-" . $user->getId());
+                $lbl = new HtmlLabel('', Models::getUserName($user));
+                $lbl->setBasic()->setProperty('data-ajax', $user->getId())->addClass('user-click');
+                $card->addItemContent($lbl)->addImage($image, "", "mini")->setFloated("left")->asAvatar();
+                return $card;
 
-		});
+            });
+        } else {
+            GUI::showSimpleMessage($this->jquery,'No stargazers for this benchmark!','','info circle',null,'Stargazers','list-user-stars');
+        }
 		$this->jquery->renderView('benchmarks/fork-stars.html');
 	}
 
 	public function forks($idBenchmark){
-		$benchmark=DAO::getOne("models\Benchmark", $idBenchmark);
+        $_SESSION['activeBenchmark']=false;
+        $benchmark=DAO::getOne("models\Benchmark", $idBenchmark);
 		GUI::getBenchmarkTop($this->jquery, $benchmark,UserAuth::getUser());
 		$this->semantic->htmlHeader("bench-header",2,"Forks");
 		$forks=DAO::getAll("models\Benchmark","idFork=".$idBenchmark);
-		$list=$this->semantic->htmlCardGroups("list-user-stars");
-		$list->fromDatabaseObjects($forks, function($bench) use ($list){
-			$card=$list->newItem("card-".$bench->getId());
-			$seg=new HtmlLink("forked-".$bench->getId(),"#",Models::getBenchmarkName($bench,false));
-			$seg->getOnClick("Benchmarks/seeOne/".$bench->getId(),"#main-container");
-			$seg->addIcon("fork");
-			$card->addItemContent($seg);
-			return $card;
+        if(\count($forks)>0) {
+            $list = $this->semantic->htmlCardGroups("list-user-stars");
+            $list->fromDatabaseObjects($forks, function ($bench) use ($list) {
+                $card = $list->newItem("card-" . $bench->getId());
+                $seg = new HtmlLink("forked-" . $bench->getId(), "#", Models::getBenchmarkName($bench, false));
+                $seg->getOnClick("Benchmarks/seeOne/" . $bench->getId(), "#main-container");
+                $seg->addIcon("fork");
+                $card->addItemContent($seg);
+                return $card;
 
-		});
+            });
+        }else{
+            GUI::showSimpleMessage($this->jquery,'This benchmark has never been forked!','','info circle',null,'Forks','list-user-stars');
+        }
         $this->jquery->renderView('benchmarks/fork-stars.html');
 	}
 

@@ -32,14 +32,17 @@ class GUI {
         }
     }
 
-	public static function showSimpleMessage(JsUtils $jquery,$content,$type,$icon="info circle",$timeout=NULL){
+	public static function showSimpleMessage(JsUtils $jquery,$content,$type,$icon="info circle",$timeout=NULL,$title=null,$id=null){
 		$semantic=$jquery->semantic();
-		$message=$semantic->htmlMessage("msg-".rand(0,50),$content,$type);
+        $id??="msg-".rand(0,50);
+		$message=$semantic->htmlMessage($id,$content,$type);
 		$message->setIcon($icon);
 		$message->setDismissable();
+        if(isset($title)){
+            $message->addHeader($title);
+        }
 		if(isset($timeout))
 			$message->setTimeout(3000);
-        self::setStyle($message);
 		return $message;
 	}
 
@@ -146,7 +149,7 @@ class GUI {
 		return $result;
 	}
 
-	public static function starButton(JsUtils $jquery,$benchmark){
+	public static function starButton(JsUtils $jquery,$benchmark,bool $refresh=true){
 		if($benchmark instanceof Benchmark)
 			$id=$benchmark->getId();
 		else{
@@ -157,7 +160,10 @@ class GUI {
 		$bt->addIcon('star')->setColor(($stared)?'green':'');
 		$bt->addLabel(Models::countStar($benchmark))->setPointing('left')->getOnClick('Benchmarks/stars/'.$id,'#main-container',['hasLoader'=>'internal']);
 		if(UserAuth::isAuth())
-			$bt->getOnClick('Main/'.(($stared)?'unstar':'star').'/'.$id,'#bt-star-'.$id,['jqueryDone'=>'replaceWith']);
+			$bt->getOnClick('Main/'.(($stared)?'unstar':'star').'/'.$id,'#bt-star-'.$id,['jqueryDone'=>'replaceWith','hasLoader'=>'internal']);
+        if($refresh) {
+            $jquery->get("/Benchmarks/stars/$id", '#main-container', ['jsCondition' => '$("#list-user-stars").length','hasLoader'=>false]);
+        }
 		return $bt;
 	}
 
@@ -172,7 +178,7 @@ class GUI {
 			}
 			$toolbar->addItem(GUI::forkButton($jquery, $benchmark));
 		}
-		$toolbar->addItem(GUI::starButton($jquery, $benchmark));
+		$toolbar->addItem(GUI::starButton($jquery, $benchmark,false));
 		return $toolbar;
 	}
 

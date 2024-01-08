@@ -44,7 +44,6 @@ abstract class ControllerBase extends Controller{
             $this->jquery->setAjaxLoader('<div class="ui active dimmer"><div class="ui text loader">Loading</div></div>');
         }
         $this->view->setVar("bg",MySettings::getBgColor());
-        $this->jquery->getOnClick('.user-click','Benchmarks/userTab/','#main-container',['attr'=>'data-ajax','hasLoader'=>false,'listenerOn'=>'body']);
     }
 
     protected function setStyle(HtmlSemDoubleElement|HtmlSemCollection|Widget $element){
@@ -56,12 +55,13 @@ abstract class ControllerBase extends Controller{
 	public function initialize(){
         $this->initializeAll();
         if(!URequest::isAjax() && !$this->forwarded){
-			$this->loadView("main/vHeader.html",["infoUser"=>UserAuth::getInfoUser($this->jquery,true)]);
+            $this->jquery->getOnClick('.user-click','Benchmarks/userTab/','#main-container',['attr'=>'data-ajax','hasLoader'=>false,'listenerOn'=>'body']);
+            $this->loadView("main/vHeader.html",["infoUser"=>UserAuth::getInfoUser($this->jquery,true)]);
 		}
 	}
 
 	public function finalize(){
-		if(!URequest::isAjax() && !$this->forwarded){
+        if(!URequest::isAjax() && !$this->forwarded){
 			$this->loadView("main/vFooter.html");
 		}
 	}

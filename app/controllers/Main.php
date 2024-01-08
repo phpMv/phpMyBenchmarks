@@ -51,6 +51,7 @@ class Main extends ControllerBase{
 	}
 
 	public function benchmark($id=null){
+        $_SESSION['activeBenchmark']=true;
         $aceTheme=MySettings::getAceTheme();
 		if(isset($id)){
 			if($id!=="session")
@@ -93,6 +94,7 @@ class Main extends ControllerBase{
 		$this->jquery->exec("setAceEditor('preparation',false,'$aceTheme');",true);
 		$this->jquery->exec("google.charts.load('current', {'packages':['corechart']});",true);
 		$this->jquery->exec("$('.ui.accordion').accordion({'exclusive': false});",true);
+        //TODO $this->jquery->exec('$(window).bind("beforeunload",(e)=>{e.preventDefault();});',true);
 
         $this->jquery->renderView("main.html",["forms"=>$forms]);
 	}
@@ -225,15 +227,13 @@ class Main extends ControllerBase{
 	public function star($idBenchmark){
         $db=DAO::getDatabase();
 		$db->execute("INSERT INTO benchstar(idBenchmark,idUser) VALUES(".$idBenchmark.",".UserAuth::getUser()->getId().");");
-		echo GUI::starButton($this->jquery, $idBenchmark);
-		echo $this->jquery->compile($this->view);
+		$this->jquery->renderComponent(GUI::starButton($this->jquery, $idBenchmark));
 	}
 
 	public function unstar($idBenchmark){
 		$db=DAO::getDatabase();
         $db->execute("DELETE FROM benchstar WHERE idBenchmark=".$idBenchmark." AND idUser=".UserAuth::getUser()->getId().";");
-		echo GUI::starButton($this->jquery, $idBenchmark);
-		echo $this->jquery->compile($this->view);
+        $this->jquery->renderComponent(GUI::starButton($this->jquery, $idBenchmark));
 	}
 
 	public function fork($idBenchmark){
