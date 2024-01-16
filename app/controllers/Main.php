@@ -106,11 +106,12 @@ class Main extends ControllerBase{
 			$testcase=Models::addTest($_SESSION["benchmark"],NULL,'',Models::$DEFAULT_PHP_VERSION);
 		}
 		$testcase->form=$testcase->getId();
-		$id="form".$testcase->getId();
+		$id=$testcase->getId();
+        $formId="form".$id;
 		$this->getForm($testcase);
 		if($asString===true)
-			return $this->jquery->renderView("testCase.html",["formName"=>$id],true);
-		$this->jquery->renderView("testCase.html",["formName"=>$id]);
+			return $this->jquery->renderView("testCase.html",["formName"=>$formId],true);
+		$this->jquery->renderView("testCase.html",["formName"=>$formId,'id'=>$id]);
 	}
 
 	public function removeTest($id){
@@ -140,7 +141,7 @@ class Main extends ControllerBase{
 		$form->addClass("test toSubmit");
 		$form->setFields(["name","phpVersion\n","code"]);
 		$this->jquery->exec("setAceEditor('".$formId."-code-0',false,'$aceTheme');",true);
-		$form->setSubmitParams("Main/send/".$id,"#result-".$formId,["params"=>
+		$form->setSubmitParams("Main/send/".$id,"#result-".$id,["params"=>
 				"{'bench-phpVersion':$(\"[name='bench-phpVersion']\").val(),'domains':$(\"[name='domains']\").val(),'bench-name':$('#bench-name').val(),'bench-description':$('#bench-description').val(),'preparation':ace.edit('preparation').getValue(),'code':ace.edit('".$formId."-code-0').getValue(),'iterations':$('#iterations').val()}"]);
 		$form->fieldAsElement("code","div","code editor");
 		$form->fieldAsDropDown(1,Models::$PHP_VERSIONS,false);
