@@ -110,7 +110,7 @@ class Main extends ControllerBase{
         $formId="form".$id;
 		$this->getForm($testcase);
 		if($asString===true)
-			return $this->jquery->renderView("testCase.html",["formName"=>$formId],true);
+			return $this->jquery->renderView("testCase.html",["formName"=>$formId,'id'=>$id],true);
 		$this->jquery->renderView("testCase.html",["formName"=>$formId,'id'=>$id]);
 	}
 
