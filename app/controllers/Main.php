@@ -61,6 +61,7 @@ class Main extends ControllerBase{
 			}
 		}else{
 			$benchmark=new Benchmark();
+            $benchmark->setUser(UserAuth::getUser());
 			$benchmark->setBeforeAll("//php preparation code executed before each test case");
 			Models::addTest($benchmark,NULL,'//php test case code');
 		}
@@ -79,24 +80,26 @@ class Main extends ControllerBase{
 		foreach ($benchmark->getTestcases() as $testcase){
 			$forms.=$this->addFormTestCase($testcase,true);
 		}
-		$runCaption="Run test cases";
+		$runCaption='Run test cases';
 
 		if(UserAuth::isAuth()){
-			$runCaption="Save and run test cases";
+			$runCaption='Save and run test cases';
 		}
-		$bts=$this->semantic->htmlButtonGroups("btsTests",[$runCaption,"Close"]);
+        $btExecs=$this->semantic->htmlButton('executions','Executions');
+        $execs=\count($benchmark->getExecutions());
+		$bts=$this->semantic->htmlButtonGroups('btsTests',[$runCaption,'Close']);
 		$bts->addClass("fluid");
 		$bts->getElement(0)->onClick("let form=getNextForm('form.toSubmit');if(form!=false) form.form('submit');")->addClass("teal")->addIcon("lightning");
-		$bts->getElement(1)->getOnClick('','#main-container',["attr"=>"","hasLoader"=>'internal']);
-        $btAdd=$this->semantic->htmlButton("addTest","Add test case");
-		$btAdd->addIcon("plus");
-		$btAdd->getOnClick("Main/addFormTestCase","#forms",["jqueryDone"=>"append","hasLoader"=>false]);
+		$bts->getElement(1)->getOnClick('','#main-container',['attr'=>"",'hasLoader'=>'internal']);
+        $btAdd=$this->semantic->htmlButton('addTest','Add test case');
+		$btAdd->addIcon('plus');
+		$btAdd->getOnClick('Main/addFormTestCase','#forms',['jqueryDone'=>'append','hasLoader'=>false]);
 		$this->jquery->exec("setAceEditor('preparation',false,'$aceTheme');",true);
 		$this->jquery->exec("google.charts.load('current', {'packages':['corechart']});",true);
 		$this->jquery->exec("$('.ui.accordion').accordion({'exclusive': false});",true);
         //TODO $this->jquery->exec('$(window).bind("beforeunload",(e)=>{e.preventDefault();});',true);
-
-        $this->jquery->renderView("main.html",["forms"=>$forms]);
+        $this->jquery->getOnClick('.item.executions','/Benchmarks/execs','#executions',['hasLoader'=>'internal-x']);
+        $this->jquery->renderView('main.html',['forms'=>$forms,'execs'=>$execs]);
 	}
 	public function addFormTestCase($testcase=null,$asString=false){
 		if(!($testcase instanceof Testcase)){
@@ -137,7 +140,7 @@ class Main extends ControllerBase{
 		$form->addClass("test toSubmit");
 		$form->setFields(["name","phpVersion\n","code"]);
 		$this->jquery->exec("setAceEditor('".$formId."-code-0',false,'$aceTheme');",true);
-		$form->setSubmitParams("Main/send/".$id,"#response-".$formId,["params"=>
+		$form->setSubmitParams("Main/send/".$id,"#result-".$formId,["params"=>
 				"{'bench-phpVersion':$(\"[name='bench-phpVersion']\").val(),'domains':$(\"[name='domains']\").val(),'bench-name':$('#bench-name').val(),'bench-description':$('#bench-description').val(),'preparation':ace.edit('preparation').getValue(),'code':ace.edit('".$formId."-code-0').getValue(),'iterations':$('#iterations').val()}"]);
 		$form->fieldAsElement("code","div","code editor");
 		$form->fieldAsDropDown(1,Models::$PHP_VERSIONS,false);

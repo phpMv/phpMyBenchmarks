@@ -3,6 +3,8 @@ namespace controllers;
 use Ajax\semantic\html\base\constants\TextAlignment;
 use libraries\MySettings;
 use models\User;
+use Ubiquity\attributes\items\router\Post;
+use Ubiquity\attributes\items\router\Route;
 use Ubiquity\orm\DAO;
 use Ajax\semantic\html\elements\HtmlLabel;
 use libraries\Models;
@@ -21,6 +23,7 @@ use Ajax\semantic\html\content\HtmlListItem;
  /**
  * Controller Benchmarks
  **/
+ #[Route("Benchmarks/", inherited: false, automated: true)]
 class Benchmarks extends ControllerBase{
 
 	const COLORS=["success"=>"green","info"=>"blue","warning"=>"orange","error"=>"red"];
@@ -186,19 +189,24 @@ class Benchmarks extends ControllerBase{
 		$this->jquery->renderView("benchmarks/seeOne.html",["benchmark"=>$benchmark,"tests"=>$testsView]);
 	}
 
-	public function listExecs($benchmark){
-		$user=UserAuth::getUser();
-		$executions=DAO::getAll("models\Execution", "idBenchmark=".$benchmark->getId()." ORDER BY createdAt DESC");
+    public function execs(){
+        $l=$this->listExecs($_SESSION["benchmark"]);
+        $this->jquery->renderComponent($l);
+    }
+
+	public function listExecs($benchmark) {
+        $user = UserAuth::getUser();
+        $executions = ($benchmark != null && $benchmark->getId()!=null)?DAO::getAll("models\Execution", "idBenchmark=" . $benchmark->getId() . " ORDER BY createdAt DESC"):$benchmark->getExecutions();
 		$listExecs=$this->semantic->dataTable("list-executions", "models\Execution", $executions);
 		$listExecs->setIdentifierFunction("getId");
 		$listExecs->setFields(["uid","createdAt","results"]);
 		$listExecs->setCaptions(["uid","When created","Results","Actions"]);
-		$listExecs->setIdentifierFunction("getId");
+		$listExecs->setIdentifierFunction("getUid");
 		$listExecs->setValueFunction("createdAt", function($str){ return Models::time_elapsed_string($str);});
 		$listExecs->setValueFunction("uid", function($str){ return \substr($str,0,7);});
 
 		$listExecs->setValueFunction("results",function($str,$exec){
-			$results=DAO::getAll("models\Result", "idExecution=".$exec->getId()." ORDER BY timer ASC");
+			$results=($exec->getId()!=null)?DAO::getAll("models\Result", "idExecution=".$exec->getId()." ORDER BY timer ASC"):$exec->getResults();
 			$list=GUI::getListResults($results,true,7);
 			return $list;
 		});
@@ -221,13 +229,19 @@ class Benchmarks extends ControllerBase{
 			DAO::remove($execution);
 			$msg=GUI::showSimpleMessage($this->jquery, "Result deleted", "info","info circle",5000);
 			$this->jquery->exec("$('tr[data-ajax={$id}]').remove();",true);
+
 		}
 		$this->jquery->renderComponent($msg);
 	}
 
 	public function seeExecutionResults($idExecution){
-		$execution=DAO::getById(Execution::class, $idExecution);
-		$results=DAO::getOneToMany($execution, "results");
+        if(UserAuth::isAuth()) {
+            $execution = DAO::getOne(Execution::class, 'uid= :uid', false, ['uid' => $idExecution]);
+            $results = DAO::getOneToMany($execution, "results");
+        }else{
+            $execution=Models::getExecutionByUid($_SESSION['benchmark'],$idExecution);
+            $results=$execution->getResults();
+        }
 		foreach ($results as $result){
 			$testId=$result->getTestcase()->getId();
 			$this->jquery->get("Benchmarks/seeResult/".$result->getId()."/".$testId,"#result-".$testId,["hasLoader"=>false,"ajaxTransition"=>"random"]);

@@ -44,6 +44,11 @@ class Auth extends ControllerBase{
 			foreach ($users as $user){
 				if($user->getPassword()==@$_POST["password"]){
 					$_SESSION["user"]=$user;
+                    if(isset($_SESSION['benchmark'])){
+                        $b=$_SESSION['benchmark'];
+                        $b->setUser($user);
+                        $_SESSION['benchmark']=$b;
+                    }
                     MySettings::getInitialSettings();
                     GUI::applySettings($this->jquery);
 					$header=$this->jquery->semantic()->htmlHeader("headerUser",3);
@@ -145,6 +150,9 @@ class Auth extends ControllerBase{
 			$adapter=OAuthManager::startAdapter($user->getAuthProvider()->getName());
 			$adapter->disconnect();
 		}
+        if(isset($_SESSION['benchmark'])){
+            $_SESSION['benchmark']->setUser(null);
+        }
 		unset($_SESSION["user"]);
 
 		$header=$this->jquery->semantic()->htmlHeader("headerUser",3);

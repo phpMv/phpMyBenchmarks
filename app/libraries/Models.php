@@ -151,6 +151,16 @@ class Models {
 		return $last;
 	}
 
+    public static function getExecutionByUid(Benchmark $bench,string $uid){
+        $executions=$bench->getExecutions();
+        foreach($executions as $exec){
+            if($exec->getUid()==$uid){
+                return $exec;
+            }
+        }
+        return null;
+    }
+
 	public static function countFork(Benchmark $benchmark){
 		return DAO::count("models\Benchmark","idFork=".$benchmark->getId());
 	}

@@ -13,15 +13,23 @@
 			Test cases
 		</div>
 		<div class="active content">
-			{{q["addTest"] | raw }}
+			{{ q["addTest"] | raw }}
 			{{forms |raw }}
 			<div id="forms">
 			</div>
 		</div>
 	</div>
-
+	<br>
 	{{q["btsTests"] | raw }}
 	<br>
+	<div class="ui basic {{style}} segment" id="executions">
+		<div class="ui compact {{style}} menu">
+			<a class="item executions">
+				<i class="icon run"></i> Executions
+				<div class="right floating ui red label">{{execs}}</div>
+			</a>
+		</div>
+	</div>
 	<div id="results"></div>
 	<div id="graph"></div>
 	<div id="info"></div>

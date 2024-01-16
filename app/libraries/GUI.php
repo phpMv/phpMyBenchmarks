@@ -91,7 +91,7 @@ class GUI {
 							Models::addResult($execution,$testcase, $time, $output->status);
 						}
 	
-						$bt=$jquery->semantic()->htmlButton("response-".$output->form," Time","fluid");
+						$bt=$jquery->semantic()->htmlButton("result-".$output->form," Time","fluid");
 						$bt->addIcon("history");
 						$bt->addLabel($time)->setPointing("left")->addClass("fluid");
 						$btInterne=$bt->getContent()[0];
